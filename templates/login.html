@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Welcome - TADDY ERP</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:linear-gradient(135deg,#172033,#315efb);font:15px Arial,sans-serif;color:#172033}
+    .login-card{width:min(420px,92vw);background:#fff;border-radius:16px;padding:38px;box-shadow:0 18px 50px #0004}
+    .brand{color:#315efb;font-weight:bold;letter-spacing:.08em;text-transform:uppercase;margin-bottom:18px}h1{margin:0 0 8px;font-size:30px}p{color:#667085;margin:0 0 26px}.field{margin:16px 0}label{display:block;font-weight:bold;margin-bottom:7px}
+    input{width:100%;padding:12px;border:1px solid #ccd2dd;border-radius:7px;font:inherit}button{width:100%;padding:12px;background:#315efb;border:0;color:#fff;border-radius:7px;font-weight:bold;cursor:pointer}
+    .flash{padding:10px;border-radius:7px;background:#fff0f0;color:#9b1c1c;margin-bottom:15px}
+  </style>
+</head>
+<body><main class="login-card"><div class="brand">TADDY ERP</div><h1>Welcome</h1><p>Sign in to manage your business operations.</p>
+  {% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<div class="flash">{{ message }}</div>{% endfor %}{% endwith %}
+  <form method="post"><div class="field"><label for="username">Username</label><input id="username" name="username" required autofocus></div><div class="field"><label for="password">Password</label><input id="password" name="password" type="password" required></div><button type="submit">Log in</button></form>
+</main></body></html>

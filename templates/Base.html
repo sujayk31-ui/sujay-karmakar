@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERP Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; display: flex; height: 100vh; background-color: #f4f6f9; }
+        .sidebar { width: 250px; background-color: #2c3e50; color: white; display: flex; flex-direction: column; }
+        .sidebar h2 { text-align: center; padding: 20px 0; background-color: #1a252f; margin: 0; }
+        .sidebar a { color: #bdc3c7; padding: 15px 20px; text-decoration: none; display: block; border-bottom: 1px solid #34495e; transition: 0.3s; }
+        .sidebar a:hover { background-color: #34495e; color: white; }
+        .content { flex: 1; padding: 20px; overflow-y: auto; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>ERP Menu</h2>
+        <a href="{{ url_for('dashboard') }}#raw-materials">Raw Materials</a>
+        <a href="{{ url_for('dashboard') }}#stitching">Stitching</a>
+        <a href="{{ url_for('dashboard') }}#ready-stock">Ready Stock</a>
+        <a href="{{ url_for('dashboard') }}#sales">Sales &amp; Billing</a>
+    </div>
+    <div class="content">
+        <div class="card">
+            {% block content %}
+            <!-- Page specific content goes here -->
+            {% endblock %}
+        </div>
+    </div>
+</body>
+</html>
