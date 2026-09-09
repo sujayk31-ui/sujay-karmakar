@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Asset QR labels</title>
+  <style>
+    body{font:14px Arial,sans-serif;color:#111;margin:16px}
+    h1{font-size:20px}.muted{color:#667085;word-break:break-all}
+    .sheet{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+    .label{border:1px solid #ccc;padding:12px;text-align:center;page-break-inside:avoid}
+    @media print{a,p.noprint{display:none}.label{border:1px solid #000}}
+  </style>
+</head>
+<body>
+  <p class="noprint"><a href="{{ url_for('assets_home') }}#barcodes">Back to Asset Tracking</a> · <a href="javascript:window.print()">Print labels</a></p>
+  <h1>Asset QR labels</h1>
+  <p class="muted noprint">QR payload is structured for BarTender 6.12 (TAG, NAME, SN, CAT, LOC, DEPT, EMP).</p>
+  <div class="sheet">
+    {% for a in assets %}
+    <div class="label">
+      {{ barcodes[a.id]|safe }}
+      <div><strong>{{ a.asset_tag }}</strong><br>{{ a.name }}<br><span class="muted">{{ a.qr_payload }}</span></div>
+    </div>
+    {% else %}<p>No assets to print.</p>{% endfor %}
+  </div>
+</body>
+</html>

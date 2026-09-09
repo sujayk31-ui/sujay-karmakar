@@ -1,0 +1,9 @@
+{
+  "name": "Asset Tracking",
+  "short_name": "Assets",
+  "start_url": "/assets",
+  "display": "standalone",
+  "background_color": "#f5f7fb",
+  "theme_color": "#172033",
+  "description": "Web-based Asset Tracking ERP"
+}

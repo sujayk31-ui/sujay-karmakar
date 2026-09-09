@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Asset Tracking</title>
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <meta name="theme-color" content="#172033">
+  <style>
+    :root{--ink:#172033;--muted:#667085;--brand:#315efb;--bg:#f5f7fb;--line:#e5e7eb}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px Arial,sans-serif}
+    header{background:var(--ink);color:#fff;padding:16px 4%;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    header h1{margin:0;font-size:22px}header a,header span{color:#dfe6fa;text-decoration:none}
+    .shell{display:flex;min-height:calc(100vh - 64px)}nav{width:220px;background:#202b45;padding:16px 10px;display:flex;flex-direction:column;gap:6px}
+    nav a{padding:11px 12px;border-radius:8px;color:#dfe6fa;text-decoration:none;font-weight:bold;font-size:13px;border-left:4px solid #ff9ec8}
+    nav a:hover,nav a.active{background:#334365;color:#fff}
+    .workspace{flex:1;padding:18px 4%}section{display:none;background:#fff;padding:20px;border-radius:12px;box-shadow:0 2px 12px #1720330a}section.active{display:block}
+    h2{font-size:19px;margin:0 0 8px}h3{font-size:15px;margin:18px 0 10px}p{margin:0 0 14px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+    input,select,button{font:inherit;padding:9px;border:1px solid #ccd2dd;border-radius:6px;width:100%}
+    button{background:var(--brand);color:#fff;border:0;cursor:pointer;font-weight:bold}button.danger{background:#dc3545}button.secondary{background:#52607a}
+    form.inline{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:4px 0}form.inline input,form.inline button,form.inline select{width:auto}form.card{border:1px solid var(--line);padding:12px;border-radius:8px;margin-bottom:12px}
+    table{width:100%;border-collapse:collapse;margin-top:10px}th,td{text-align:left;padding:9px 7px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--muted);font-size:12px;white-space:nowrap}
+    .table-wrap{overflow-x:auto}.flash{padding:11px 14px;border-radius:7px;margin:10px 0}.success{background:#e8f7ee;color:#176b38}.error{background:#fff0f0;color:#9b1c1c}
+    .muted{color:var(--muted)}.empty{color:var(--muted);padding:12px 0}
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:16px}.stat{border:1px solid var(--line);border-radius:8px;padding:12px}.stat b{display:block;font-size:20px;margin-top:4px}
+    .badge{display:inline-block;padding:3px 8px;border-radius:99px;font-size:12px;font-weight:bold}.available{background:#e8f7ee;color:#176b38}.in-use{background:#e8eefc;color:#2341a0}.maintenance{background:#fff6e5;color:#9a6700}.retired{background:#eee;color:#555}.lost{background:#fff0f0;color:#9b1c1c}.found{background:#e8f7ee;color:#176b38}.missing{background:#fff0f0;color:#9b1c1c}.wrong{background:#fff6e5;color:#9a6700}
+    a.asset-link{color:var(--brand);text-decoration:none;font-weight:bold}
+    .deploy{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}.deploy span{background:#eef2ff;color:#2341a0;padding:5px 9px;border-radius:99px;font-size:12px;font-weight:bold}
+    .barcode-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.barcode-card{border:1px solid var(--line);padding:10px;border-radius:8px;text-align:center}.barcode-card .muted{word-break:break-all;font-size:11px}
+    @media (max-width:860px){
+      .shell{flex-direction:column}nav{width:100%;flex-direction:row;flex-wrap:nowrap;overflow-x:auto}
+      nav a{white-space:nowrap;border-left:0;border-bottom:3px solid #ff9ec8}header h1{font-size:18px}
+      form.inline input,form.inline select,form.inline button{width:100%}
+    }
+    @media print{header,nav,.flash,form,button,.deploy{display:none!important}.workspace{padding:0}section{display:block!important;box-shadow:none}}
+  </style>
+</head>
+<body>
+{% set status_class = {'Available':'available','In Use':'in-use','Under Maintenance':'maintenance','Retired':'retired','Lost':'lost'} %}
+<header>
+  <h1>Asset Tracking</h1>
+  <span>
+    <form style="display:inline" method="post" action="{{ url_for('logout') }}"><button style="width:auto;padding:6px 12px;background:#dc3545">Log out</button></form>
+  </span>
+</header>
+<main class="shell">
+  <nav>
+    <a class="tab-link" href="#register">Asset Registration</a>
+    <a class="tab-link" href="#master">Asset Master</a>
+    <a class="tab-link" href="#barcodes">QR Code Generation</a>
+    <a class="tab-link" href="#locations">Location Management</a>
+    <a class="tab-link" href="#departments">Department Management</a>
+    <a class="tab-link" href="#employees">Employee Management</a>
+    <a class="tab-link" href="#allocation">Employee Allocation</a>
+    <a class="tab-link" href="#movement">Asset Movement</a>
+    <a class="tab-link" href="#transfer">Asset Transfer</a>
+    <a class="tab-link" href="#verify">Physical Verification</a>
+    <a class="tab-link" href="#reports">Reports</a>
+    <a class="tab-link" href="#missing">Missing Asset Identification</a>
+    <a class="tab-link" href="#audit">Missing Audit Report</a>
+    <a class="tab-link" href="#history">Asset History</a>
+  </nav>
+  <div class="workspace">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}
+    {% endwith %}
+    <div class="deploy">
+      <span>Desktop (local app)</span><span>Web-based</span><span>Cloud-ready</span><span>Mobile browser / PWA</span>
+    </div>
+    <div class="stats">
+      <div class="stat">Total<b>{{ asset_summary.Total }}</b></div>
+      <div class="stat">Available<b>{{ asset_summary.Available }}</b></div>
+      <div class="stat">In use<b>{{ asset_summary['In Use'] }}</b></div>
+      <div class="stat">Allocated<b>{{ asset_summary.Allocated }}</b></div>
+      <div class="stat">Missing / lost<b>{{ asset_summary.Lost }}</b></div>
+      <div class="stat">Open audits<b>{{ asset_summary['Open verifications'] }}</b></div>
+    </div>
+
+    <section id="register"><h2>Asset Registration</h2>
+      <p class="muted">Create a new asset in the central database. A unique tag and QR code are generated automatically.</p>
+      <form method="post" action="{{ url_for('add_asset') }}" class="card"><div class="grid">
+        <input name="asset_tag" placeholder="Asset tag (auto if blank)">
+        <input name="name" placeholder="Asset name" required>
+        <select name="category" required><option value="">Category</option>{% for c in asset_categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}</select>
+        <input name="serial_no" placeholder="Serial number">
+        <input name="brand" placeholder="Brand">
+        <input name="model" placeholder="Model">
+        <input name="purchase_date" type="date" title="Purchase date">
+        <input name="purchase_cost" type="number" min="0" step="0.01" placeholder="Purchase cost" value="0">
+        <input name="supplier" placeholder="Supplier / vendor">
+        <select name="location_id"><option value="">Location</option>{% for loc in locations %}<option value="{{ loc.id }}">{{ loc.name }}</option>{% endfor %}</select>
+        <select name="department_id"><option value="">Department</option>{% for d in departments %}<option value="{{ d.id }}">{{ d.name }}</option>{% endfor %}</select>
+        <select name="employee_id"><option value="">Allocate to employee</option>{% for e in employees %}<option value="{{ e.id }}">{{ e.name }} ({{ e.emp_code }})</option>{% endfor %}</select>
+        <select name="status">{% for s in asset_statuses %}<option value="{{ s }}" {% if s == 'Available' %}selected{% endif %}>{{ s }}</option>{% endfor %}</select>
+        <select name="condition">{% for c in asset_conditions %}<option value="{{ c }}" {% if c == 'Good' %}selected{% endif %}>{{ c }}</option>{% endfor %}</select>
+        <input name="warranty_expiry" type="date" title="Warranty expiry">
+        <input name="description" placeholder="Description">
+        <input name="notes" placeholder="Notes">
+      </div><br><button type="submit">Register asset</button></form>
+    </section>
+
+    <section id="master"><h2>Asset Master Management</h2>
+      <p class="muted">Search, maintain, and update the complete asset master.</p>
+      <form method="post" action="{{ url_for('add_asset_category') }}" class="card"><div class="grid"><input name="name" placeholder="New asset category" required></div><br><button class="secondary" type="submit">Add category</button></form>
+      <form method="get" action="{{ url_for('assets_home') }}" class="card"><div class="grid">
+        <input name="q" value="{{ asset_query }}" placeholder="Search tag, name, serial, location, person">
+        <select name="asset_status"><option value="">All statuses</option>{% for s in asset_statuses %}<option value="{{ s }}" {% if asset_status == s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select>
+      </div><br><button type="submit">Search master</button></form>
+      <div class="table-wrap"><table><tr><th>Tag</th><th>Asset</th><th>Category</th><th>Location</th><th>Department</th><th>Employee</th><th>Status</th><th>Cost</th></tr>
+        {% for a in assets %}<tr>
+          <td><a class="asset-link" href="{{ url_for('asset_detail', asset_id=a.id) }}">{{ a.asset_tag }}</a></td>
+          <td><strong>{{ a.name }}</strong>{% if a.serial_no %}<br><span class="muted">S/N {{ a.serial_no }}</span>{% endif %}</td>
+          <td>{{ a.category }}</td>
+          <td>{{ a.display_location or "-" }}</td>
+          <td>{{ a.display_department or "-" }}</td>
+          <td>{{ a.display_employee or "-" }}</td>
+          <td><span class="badge {{ status_class.get(a.status, '') }}">{{ a.status }}</span></td>
+          <td>{{ "%.2f"|format(a.purchase_cost) }}</td>
+        </tr>{% else %}<tr><td colspan="8" class="empty">No assets in the master yet.</td></tr>{% endfor %}
+      </table></div>
+    </section>
+
+    <section id="barcodes"><h2>QR Code Generation</h2>
+      <p class="muted">Each asset gets a QR code encoded with structured BarTender 6.12 data: <code>TAG=...;NAME=...;SN=...;CAT=...;LOC=...;DEPT=...;EMP=...</code>. Download the CSV or tab-delimited text file, then in BarTender 6.12 create a Text File data source and map the <strong>QRData</strong> field to a QR Code object.</p>
+      <p>
+        <a class="asset-link" href="{{ url_for('asset_labels') }}" target="_blank">Printable QR labels</a>
+        &nbsp;·&nbsp;
+        <a class="asset-link" href="{{ url_for('bartender_csv') }}">Download BarTender CSV</a>
+        &nbsp;·&nbsp;
+        <a class="asset-link" href="{{ url_for('bartender_txt') }}">Download BarTender TXT (tab-delimited)</a>
+      </p>
+      <div class="barcode-grid">
+        {% for a in assets %}
+        <div class="barcode-card">
+          <img src="{{ url_for('asset_barcode_image', asset_id=a.id) }}" alt="{{ a.asset_tag }}" style="width:100%;max-width:220px">
+          <div><strong>{{ a.name }}</strong><br><span class="muted">{{ a.asset_tag }}</span><br><span class="muted">{{ a.qr_payload }}</span></div>
+        </div>
+        {% else %}<p class="empty">Register assets to generate QR codes.</p>{% endfor %}
+      </div>
+    </section>
+
+    <section id="locations"><h2>Location Management</h2>
+      <form method="post" action="{{ url_for('add_location') }}" class="card"><div class="grid">
+        <input name="code" placeholder="Location code" required>
+        <input name="name" placeholder="Location name" required>
+        <input name="building" placeholder="Building">
+        <input name="floor" placeholder="Floor">
+        <select name="department_id"><option value="">Department (optional)</option>{% for d in departments %}<option value="{{ d.id }}">{{ d.name }}</option>{% endfor %}</select>
+        <input name="notes" placeholder="Notes">
+      </div><br><button type="submit">Add location</button></form>
+      <div class="table-wrap"><table><tr><th>Code</th><th>Name</th><th>Building / floor</th><th>Department</th><th></th></tr>
+        {% for loc in locations %}<tr><td>{{ loc.code }}</td><td><strong>{{ loc.name }}</strong></td><td>{{ loc.building or "-" }} / {{ loc.floor or "-" }}</td><td>{{ loc.department_name or "-" }}</td>
+          <td><form method="post" action="{{ url_for('delete_location', location_id=loc.id) }}" onsubmit="return confirm('Delete this location?');"><button class="danger" type="submit">Delete</button></form></td></tr>
+        {% else %}<tr><td colspan="5" class="empty">No locations yet.</td></tr>{% endfor %}
+      </table></div>
+    </section>
+
+    <section id="departments"><h2>Department Management</h2>
+      <form method="post" action="{{ url_for('add_department') }}" class="card"><div class="grid">
+        <input name="code" placeholder="Department code" required>
+        <input name="name" placeholder="Department name" required>
+        <input name="manager" placeholder="Manager">
+        <input name="notes" placeholder="Notes">
+      </div><br><button type="submit">Add department</button></form>
+      <div class="table-wrap"><table><tr><th>Code</th><th>Name</th><th>Manager</th><th></th></tr>
+        {% for d in departments %}<tr><td>{{ d.code }}</td><td><strong>{{ d.name }}</strong></td><td>{{ d.manager or "-" }}</td>
+          <td><form method="post" action="{{ url_for('delete_department', department_id=d.id) }}" onsubmit="return confirm('Delete this department?');"><button class="danger" type="submit">Delete</button></form></td></tr>
+        {% else %}<tr><td colspan="4" class="empty">No departments yet.</td></tr>{% endfor %}
+      </table></div>
+    </section>
+
+    <section id="employees"><h2>Employee Management</h2>
+      <p class="muted">Maintain the people who can be allocated assets.</p>
+      <form method="post" action="{{ url_for('add_employee') }}" class="card"><div class="grid">
+        <input name="emp_code" placeholder="Employee code" required>
+        <input name="name" placeholder="Employee name" required>
+        <select name="department_id"><option value="">Department</option>{% for d in departments %}<option value="{{ d.id }}">{{ d.name }}</option>{% endfor %}</select>
+        <input name="designation" placeholder="Designation">
+        <input name="phone" placeholder="Phone">
+      </div><br><button type="submit">Add employee</button></form>
+      <div class="table-wrap"><table><tr><th>Code</th><th>Name</th><th>Department</th><th>Designation</th><th></th></tr>
+        {% for e in employees %}<tr><td>{{ e.emp_code }}</td><td><strong>{{ e.name }}</strong></td><td>{{ e.department_name or "-" }}</td><td>{{ e.designation or "-" }}</td>
+          <td><form method="post" action="{{ url_for('delete_employee', employee_id=e.id) }}" onsubmit="return confirm('Delete this employee?');"><button class="danger" type="submit">Delete</button></form></td></tr>
+        {% else %}<tr><td colspan="5" class="empty">No employees yet.</td></tr>{% endfor %}
+      </table></div>
+    </section>
+
+    <section id="allocation"><h2>Employee Allocation</h2>
+      <p class="muted">Assign custody of an asset to an employee. This is recorded in asset history.</p>
+      <form method="post" id="allocate-form" class="card"><div class="grid">
+        <select name="asset_pick" id="allocate-asset" required><option value="">Select asset</option>{% for a in assets %}<option value="{{ a.id }}">{{ a.asset_tag }} - {{ a.name }}</option>{% endfor %}</select>
+        <select name="employee_id" required><option value="">Employee</option>{% for e in employees %}<option value="{{ e.id }}">{{ e.name }} ({{ e.emp_code }})</option>{% endfor %}</select>
+        <select name="department_id"><option value="">Department override</option>{% for d in departments %}<option value="{{ d.id }}">{{ d.name }}</option>{% endfor %}</select>
+        <input name="reason" placeholder="Reason">
+        <input name="moved_by" placeholder="Allocated by">
+      </div><br><button type="submit">Allocate asset</button></form>
+    </section>
+
+    <section id="movement"><h2>Asset Movement</h2>
+      <p class="muted">Move an asset from one location to another without changing department ownership.</p>
+      <form method="post" id="move-form" class="card"><div class="grid">
+        <select name="asset_pick" id="move-asset" required><option value="">Select asset</option>{% for a in assets %}<option value="{{ a.id }}">{{ a.asset_tag }} - {{ a.name }} ({{ a.display_location or 'no location' }})</option>{% endfor %}</select>
+        <select name="location_id" required><option value="">Destination location</option>{% for loc in locations %}<option value="{{ loc.id }}">{{ loc.name }}</option>{% endfor %}</select>
+        <input name="reason" placeholder="Reason">
+        <input name="moved_by" placeholder="Moved by">
+      </div><br><button type="submit">Record movement</button></form>
+      <h3>Recent movements</h3>
+      <div class="table-wrap"><table><tr><th>When</th><th>Type</th><th>Asset</th><th>To location</th><th>To employee</th><th>Reason</th></tr>
+        {% for m in movements %}<tr><td>{{ m.created_at }}</td><td>{{ m.movement_type }}</td><td>{{ m.asset_tag }} {{ m.asset_name }}</td><td>{{ m.to_location or "-" }}</td><td>{{ m.to_employee or "-" }}</td><td>{{ m.reason or "-" }}</td></tr>
+        {% else %}<tr><td colspan="6" class="empty">No movements yet.</td></tr>{% endfor %}
+      </table></div>
+    </section>
+
+    <section id="transfer"><h2>Asset Transfer</h2>
+      <p class="muted">Transfer an asset across location, department, and employee in one step.</p>
+      <form method="post" id="transfer-form" class="card"><div class="grid">
+        <select name="asset_pick" id="transfer-asset" required><option value="">Select asset</option>{% for a in assets %}<option value="{{ a.id }}">{{ a.asset_tag }} - {{ a.name }}</option>{% endfor %}</select>
+        <select name="location_id"><option value="">Location</option>{% for loc in locations %}<option value="{{ loc.id }}">{{ loc.name }}</option>{% endfor %}</select>
+        <select name="department_id"><option value="">Department</option>{% for d in departments %}<option value="{{ d.id }}">{{ d.name }}</option>{% endfor %}</select>
+        <select name="employee_id"><option value="">Employee</option>{% for e in employees %}<option value="{{ e.id }}">{{ e.name }}</option>{% endfor %}</select>
+        <input name="reason" placeholder="Transfer reason">
+        <input name="moved_by" placeholder="Transferred by">
+      </div><br><button type="submit">Record transfer</button></form>
+    </section>
+
+    <section id="verify"><h2>Physical Verification</h2>
+      <p class="muted">Start a location audit, scan or mark each expected asset as found or missing, then complete the session.</p>
+      <form method="post" action="{{ url_for('start_verification') }}" class="card"><div class="grid">
+        <input name="name" placeholder="Verification name" value="Physical verification">
+        <select name="location_id"><option value="">All locations</option>{% for loc in locations %}<option value="{{ loc.id }}">{{ loc.name }}</option>{% endfor %}</select>
+        <input name="notes" placeholder="Notes">
+      </div><br><button type="submit">Start verification</button></form>
+      <h3>Sessions</h3>
+      <div class="table-wrap"><table><tr><th>Name</th><th>Location</th><th>Status</th><th>Checked</th><th>Missing</th><th></th></tr>
+        {% for s in verifications %}<tr>
+          <td><strong>{{ s.name }}</strong><br><span class="muted">{{ s.started_at }}</span></td>
+          <td>{{ s.location_name or "All locations" }}</td>
+          <td>{{ s.status }}</td><td>{{ s.checked_count }}</td><td>{{ s.missing_count }}</td>
+          <td><a class="asset-link" href="{{ url_for('assets_home', session=s.id) }}#verify">Open</a></td>
+        </tr>{% else %}<tr><td colspan="6" class="empty">No verification sessions yet.</td></tr>{% endfor %}
+      </table></div>
+      {% if verification %}
+      <h3>{{ verification.name }} — {{ verification.status }}</h3>
+      <p class="muted">{{ verification.location_name or "All locations" }} · Found {{ verification.found_count }} · Missing {{ verification.missing_count }} · Wrong location {{ verification.wrong_count }}</p>
+      {% if verification.status == 'Open' %}
+      <form method="post" action="{{ url_for('mark_verification', session_id=verification.id) }}" class="card"><div class="grid">
+        <input name="asset_tag" placeholder="Scan QR or type asset tag" autofocus>
+        <select name="result"><option value="Found">Found</option><option value="Missing">Missing</option><option value="Wrong location">Wrong location</option></select>
+        <input name="notes" placeholder="Notes">
+      </div><br><button type="submit">Record scan</button></form>
+      {% endif %}
+      <div class="table-wrap"><table><tr><th>Tag</th><th>Asset</th><th>Expected location</th><th>Result</th><th></th></tr>
+        {% for a in verification.expected %}<tr>
+          <td>{{ a.asset_tag }}</td><td>{{ a.name }}</td><td>{{ a.display_location or "-" }}</td>
+          <td>{% if a.verification %}<span class="badge {{ {'Found':'found','Missing':'missing','Wrong location':'wrong'}.get(a.verification.result, '') }}">{{ a.verification.result }}</span>{% else %}<span class="muted">Pending</span>{% endif %}</td>
+          <td>{% if verification.status == 'Open' %}
+            <form class="inline" method="post" action="{{ url_for('mark_verification', session_id=verification.id) }}"><input type="hidden" name="asset_id" value="{{ a.id }}"><button name="result" value="Found">Found</button><button class="secondary" name="result" value="Missing">Missing</button></form>
+          {% endif %}</td>
+        </tr>{% else %}<tr><td colspan="5" class="empty">No assets expected for this scope.</td></tr>{% endfor %}
+      </table></div>
+      {% if verification.status == 'Open' %}
+      <form method="post" action="{{ url_for('complete_verification', session_id=verification.id) }}" class="card" onsubmit="return confirm('Complete this verification? Unchecked assets will be marked missing.');">
+        <label><input type="checkbox" name="mark_missing_lost" value="yes"> Also mark missing assets as Lost</label>
+        <br><br><button type="submit">Complete verification</button>
+      </form>
+      {% endif %}
+      {% endif %}
+    </section>
+
+    <section id="reports"><h2>Reports</h2>
+      <p class="muted">Live counts and recent asset movements across locations, departments, and employees.</p>
+      <div class="stats">
+        <div class="stat">Total<b>{{ asset_summary.Total }}</b></div>
+        <div class="stat">Available<b>{{ asset_summary.Available }}</b></div>
+        <div class="stat">In use<b>{{ asset_summary['In Use'] }}</b></div>
+        <div class="stat">Allocated<b>{{ asset_summary.Allocated }}</b></div>
+        <div class="stat">Lost<b>{{ asset_summary.Lost }}</b></div>
+      </div>
+      <h3>Movement report</h3>
+      <div class="table-wrap"><table><tr><th>When</th><th>Type</th><th>Asset</th><th>To location</th><th>To department</th><th>To employee</th><th>Reason</th></tr>
+        {% for m in movements %}<tr><td>{{ m.created_at }}</td><td>{{ m.movement_type }}</td><td>{{ m.asset_tag }} {{ m.asset_name }}</td><td>{{ m.to_location or "-" }}</td><td>{{ m.to_department or "-" }}</td><td>{{ m.to_employee or "-" }}</td><td>{{ m.reason or "-" }}</td></tr>
+        {% else %}<tr><td colspan="7" class="empty">No movements yet.</td></tr>{% endfor %}
+      </table></div>
+    </section>
+
+    <section id="missing"><h2>Missing Asset Identification</h2>
+      <p class="muted">Assets currently marked Lost in the master, so they can be investigated or recovered.</p>
+      <div class="table-wrap"><table><tr><th>Tag</th><th>Name</th><th>Status</th><th>Last location</th><th>Employee</th></tr>
+        {% for a in missing_assets.lost %}<tr><td><a class="asset-link" href="{{ url_for('asset_detail', asset_id=a.id) }}">{{ a.asset_tag }}</a></td><td>{{ a.name }}</td><td><span class="badge lost">Lost</span></td><td>{{ a.display_location or "-" }}</td><td>{{ a.display_employee or "-" }}</td></tr>
+        {% else %}<tr><td colspan="5" class="empty">No assets currently marked Lost.</td></tr>{% endfor %}
+      </table></div>
+    </section>
+
+    <section id="audit"><h2>Missing Audit Report</h2>
+      <p class="muted">Items reported missing during physical verification sessions.</p>
+      <div class="table-wrap"><table><tr><th>When</th><th>Session</th><th>Tag</th><th>Asset</th><th>Location</th><th>Notes</th></tr>
+        {% for row in missing_assets.verification_missing %}<tr><td>{{ row.started_at }}</td><td>{{ row.session_name }}</td><td>{{ row.asset_tag }}</td><td>{{ row.name }}</td><td>{{ row.location_name or "-" }}</td><td>{{ row.notes or "-" }}</td></tr>
+        {% else %}<tr><td colspan="6" class="empty">No missing results from verification.</td></tr>{% endfor %}
+      </table></div>
+    </section>
+
+    <section id="history"><h2>Asset History</h2>
+      <p class="muted">Complete activity trail. Open an asset tag for that item's full history.</p>
+      <div class="table-wrap"><table><tr><th>When</th><th>Asset</th><th>Activity</th><th>Details</th></tr>
+        {% for e in audit_report.events %}<tr><td>{{ e.created_at }}</td><td>{{ e.asset_tag }} {{ e.asset_name }}</td><td>{{ e.activity }}</td><td>{{ e.details }}</td></tr>
+        {% else %}<tr><td colspan="4" class="empty">No history yet.</td></tr>{% endfor %}
+      </table></div>
+    </section>
+  </div>
+</main>
+<script>
+  const links = document.querySelectorAll('.tab-link');
+  const panels = document.querySelectorAll('section');
+  function activateTab() {
+    const params = new URLSearchParams(location.search);
+    let id = location.hash ? location.hash.slice(1) : 'register';
+    if (!location.hash && params.get('session')) id = 'verify';
+    if (!location.hash && (params.get('q') || params.get('asset_status'))) id = 'master';
+    panels.forEach(panel => panel.classList.toggle('active', panel.id === id));
+    links.forEach(link => link.classList.toggle('active', link.getAttribute('href') === '#' + id));
+  }
+  links.forEach(link => link.addEventListener('click', () => setTimeout(activateTab, 0)));
+  window.addEventListener('hashchange', activateTab);
+  activateTab();
+  function bindAssetForm(formId, selectId, urlBase) {
+    const form = document.getElementById(formId);
+    const select = document.getElementById(selectId);
+    if (!form || !select) return;
+    form.addEventListener('submit', function (event) {
+      if (!select.value) return;
+      form.action = urlBase.replace('/0/', '/' + select.value + '/');
+    });
+  }
+  bindAssetForm('allocate-form', 'allocate-asset', {{ url_for('allocate_asset', asset_id=0) | tojson }});
+  bindAssetForm('move-form', 'move-asset', {{ url_for('move_asset', asset_id=0) | tojson }});
+  bindAssetForm('transfer-form', 'transfer-asset', {{ url_for('transfer_asset', asset_id=0) | tojson }});
+</script>
+</body>
+</html>

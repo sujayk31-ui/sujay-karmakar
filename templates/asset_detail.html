@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ asset.asset_tag }} - Asset Tracking</title>
+  <style>
+    :root{--ink:#172033;--muted:#667085;--brand:#315efb;--bg:#f5f7fb;--line:#e5e7eb}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px Arial,sans-serif}
+    header{background:var(--ink);color:#fff;padding:18px 5%;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    header h1{margin:0;font-size:22px}header a{color:#dfe6fa;text-decoration:none;font-weight:bold}
+    .layout{max-width:1100px;margin:auto;padding:22px 5%}
+    .card{background:#fff;padding:22px;margin-bottom:16px;border-radius:12px;box-shadow:0 2px 12px #1720330a}
+    h2{font-size:19px;margin:0 0 16px}h3{font-size:15px;margin:0 0 10px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+    input,select,button{font:inherit;padding:9px;border:1px solid #ccd2dd;border-radius:6px;width:100%}
+    button{background:var(--brand);color:white;border:0;cursor:pointer;font-weight:bold}button.danger{background:#dc3545}button.secondary{background:#52607a}
+    .flash{padding:11px 14px;border-radius:7px;margin:10px 0}.success{background:#e8f7ee;color:#176b38}.error{background:#fff0f0;color:#9b1c1c}
+    .muted{color:var(--muted)}table{width:100%;border-collapse:collapse;margin-top:12px}th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-size:12px}
+    .badge{display:inline-block;padding:3px 8px;border-radius:99px;font-size:12px;font-weight:bold}.available{background:#e8f7ee;color:#176b38}.in-use{background:#e8eefc;color:#2341a0}.maintenance{background:#fff6e5;color:#9a6700}.retired{background:#eee;color:#555}.lost{background:#fff0f0;color:#9b1c1c}
+    .meta{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:16px}.actions{display:grid;gap:12px}.barcode{text-align:center;background:#fff}.barcode .muted{word-break:break-all;font-size:12px}
+  </style>
+</head>
+<body>
+<header>
+  <h1>{{ asset.asset_tag }} · {{ asset.name }}</h1>
+  <a href="{{ url_for('assets_home') }}#master">Back to asset master</a>
+</header>
+<main class="layout">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}
+  {% endwith %}
+  {% set status_class = {'Available':'available','In Use':'in-use','Under Maintenance':'maintenance','Retired':'retired','Lost':'lost'} %}
+  <div class="card">
+    <div class="meta">
+      <span>Status: <span class="badge {{ status_class.get(asset.status, '') }}">{{ asset.status }}</span></span>
+      <span>Location: <strong>{{ asset.display_location or "-" }}</strong></span>
+      <span>Department: <strong>{{ asset.display_department or "-" }}</strong></span>
+      <span>Employee: <strong>{{ asset.display_employee or "-" }}</strong></span>
+    </div>
+    <div class="barcode">{{ barcode_svg|safe }}<p class="muted">{{ asset.qr_payload }}</p></div>
+    <form method="post" action="{{ url_for('update_asset', asset_id=asset.id) }}">
+      <h3>Asset master record</h3>
+      <div class="grid">
+        <input name="asset_tag" value="{{ asset.asset_tag }}" required>
+        <input name="barcode" value="{{ asset.barcode }}" placeholder="Barcode">
+        <input name="name" value="{{ asset.name }}" required>
+        <select name="category">{% for c in asset_categories %}<option value="{{ c }}" {% if asset.category == c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select>
+        <input name="serial_no" value="{{ asset.serial_no }}" placeholder="Serial number">
+        <input name="brand" value="{{ asset.brand }}" placeholder="Brand">
+        <input name="model" value="{{ asset.model }}" placeholder="Model">
+        <input name="purchase_date" type="date" value="{{ asset.purchase_date }}">
+        <input name="purchase_cost" type="number" min="0" step="0.01" value="{{ asset.purchase_cost }}">
+        <input name="supplier" value="{{ asset.supplier }}" placeholder="Supplier">
+        <select name="location_id"><option value="">Location</option>{% for loc in locations %}<option value="{{ loc.id }}" {% if asset.location_id == loc.id %}selected{% endif %}>{{ loc.name }}</option>{% endfor %}</select>
+        <select name="department_id"><option value="">Department</option>{% for d in departments %}<option value="{{ d.id }}" {% if asset.department_id == d.id %}selected{% endif %}>{{ d.name }}</option>{% endfor %}</select>
+        <select name="employee_id"><option value="">Employee</option>{% for e in employees %}<option value="{{ e.id }}" {% if asset.employee_id == e.id %}selected{% endif %}>{{ e.name }}</option>{% endfor %}</select>
+        <select name="status">{% for s in asset_statuses %}<option value="{{ s }}" {% if asset.status == s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select>
+        <select name="condition">{% for c in asset_conditions %}<option value="{{ c }}" {% if asset.condition == c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select>
+        <input name="warranty_expiry" type="date" value="{{ asset.warranty_expiry }}">
+        <input name="description" value="{{ asset.description }}" placeholder="Description">
+        <input name="notes" value="{{ asset.notes }}" placeholder="Notes">
+      </div>
+      <br><button type="submit">Save asset record</button>
+    </form>
+  </div>
+  <div class="card actions">
+    <form method="post" action="{{ url_for('log_asset_maintenance', asset_id=asset.id) }}">
+      <h3>Maintenance</h3>
+      <div class="grid">
+        <input name="details" placeholder="What was inspected or repaired?" required>
+        <select name="set_status"><option value="">Keep current status</option>{% for s in asset_statuses %}<option value="{{ s }}">Set status to {{ s }}</option>{% endfor %}</select>
+      </div>
+      <br><button class="secondary" type="submit">Log maintenance</button>
+    </form>
+    <form method="post" action="{{ url_for('delete_asset', asset_id=asset.id) }}" onsubmit="return confirm('Remove this asset from the master?');">
+      <button class="danger" type="submit">Delete asset</button>
+    </form>
+  </div>
+  <div class="card">
+    <h2>Asset history</h2>
+    <p class="muted">Registration, transfers, movements, allocations, verification, and edits.</p>
+    <table><tr><th>When</th><th>Event</th><th>Details</th></tr>
+      {% for e in events %}<tr><td>{{ e.created_at }}</td><td>{{ e.event_type }}</td><td>{{ e.details }}</td></tr>
+      {% else %}<tr><td colspan="3" class="muted">No history yet.</td></tr>{% endfor %}
+    </table>
+    <h3 style="margin-top:22px">Movement / transfer log</h3>
+    <table><tr><th>When</th><th>Type</th><th>To location</th><th>To department</th><th>To employee</th><th>Reason</th></tr>
+      {% for m in movements %}<tr><td>{{ m.created_at }}</td><td>{{ m.movement_type }}</td><td>{{ m.to_location or "-" }}</td><td>{{ m.to_department or "-" }}</td><td>{{ m.to_employee or "-" }}</td><td>{{ m.reason or "-" }}</td></tr>
+      {% else %}<tr><td colspan="6" class="muted">No movements yet.</td></tr>{% endfor %}
+    </table>
+  </div>
+</main>
+</body>
+</html>
