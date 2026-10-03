@@ -1,0 +1,23 @@
+@model CategoryPageView
+@{
+    ViewData["Title"] = Model.Category.Name;
+}
+<header class="page-head">
+    <p class="eyebrow">Category</p>
+    <h1>@Model.Category.Name</h1>
+    <p>@Model.Category.Description Sorted by distance from @Model.Location.Label.</p>
+</header>
+<partial name="_LocationBar" model="Model.Location" />
+@if (Model.Products.Count == 0)
+{
+    <p class="empty">Nothing in this category is in stock.</p>
+}
+else
+{
+    <div class="product-grid">
+        @foreach (var product in Model.Products)
+        {
+            <partial name="_ProductCard" model="product" />
+        }
+    </div>
+}

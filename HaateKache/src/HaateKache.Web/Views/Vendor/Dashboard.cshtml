@@ -1,0 +1,57 @@
+@model VendorDashboardView
+@{
+    ViewData["Title"] = Model.Store.Name;
+}
+<header class="page-head">
+    <p class="eyebrow">Store portal</p>
+    <h1>@Model.Store.Name</h1>
+    <p>@Model.Store.Address, @Model.Store.Area · @StatusText.Approval(Model.Store.ApprovalStatus)</p>
+</header>
+@if (Model.Store.ApprovalStatus != StoreApprovalStatus.Approved)
+{
+    <p class="flash @(Model.Store.ApprovalStatus == StoreApprovalStatus.Rejected ? "flash-bad" : "flash-ok")">
+        @if (Model.Store.ApprovalStatus == StoreApprovalStatus.Pending)
+        {
+            <span>The owner still needs to approve this store. You can sign in, but products and orders stay locked until then.</span>
+        }
+        else
+        {
+            <span>This registration was rejected. The owner can approve it later from the vendor list.</span>
+        }
+    </p>
+}
+else
+{
+    <div class="stat-grid">
+        <article><span>Products</span><strong>@Model.ProductCount</strong></article>
+        <article><span>Open orders</span><strong>@Model.OpenOrders</strong></article>
+        <article><span>Authorized sales</span><strong>@Money.Taka(Model.Revenue)</strong></article>
+    </div>
+    <p class="actions">
+        <a class="button" asp-action="Products">Products</a>
+        <a class="button button-quiet" asp-action="Orders">Orders</a>
+    </p>
+    <h2>Recent orders</h2>
+    @if (Model.RecentOrders.Count == 0)
+    {
+        <p class="empty">No orders yet.</p>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Order</th><th>Status</th><th>Total</th></tr></thead>
+                <tbody>
+                @foreach (var order in Model.RecentOrders)
+                {
+                    <tr>
+                        <td><a asp-action="Order" asp-route-id="@order.Id">@order.OrderNumber</a></td>
+                        <td><span class="pill pill-@order.Status">@StatusText.Label(order.Status)</span></td>
+                        <td>@Money.Taka(order.Total)</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+}

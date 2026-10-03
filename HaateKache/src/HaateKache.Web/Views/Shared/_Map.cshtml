@@ -1,0 +1,25 @@
+@model MapViewModel
+@{
+    var useGoogle = !string.IsNullOrWhiteSpace(Model.GoogleMapsApiKey);
+}
+<section class="map-panel">
+    <p class="map-note">@(useGoogle ? "Map: Google Maps" : "Map: OpenStreetMap")</p>
+    @if (!useGoogle)
+    {
+        <link rel="stylesheet" href="~/lib/leaflet/leaflet.css" asp-append-version="true" />
+    }
+    <div id="store-map"
+         data-provider="@(useGoogle ? "google" : "leaflet")"
+         data-lat="@Model.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+         data-lng="@Model.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture)"></div>
+    <script type="application/json" id="store-map-data">@Html.Raw(Model.PayloadJson)</script>
+    @if (!useGoogle)
+    {
+        <script src="~/lib/leaflet/leaflet.js" asp-append-version="true"></script>
+    }
+    <script src="~/js/map.js" asp-append-version="true"></script>
+    @if (useGoogle)
+    {
+        <script async defer src="https://maps.googleapis.com/maps/api/js?key=@Model.GoogleMapsApiKey&callback=initGoogleMap"></script>
+    }
+</section>

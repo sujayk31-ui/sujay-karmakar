@@ -1,0 +1,19 @@
+@model ProductCardView
+<article class="product-card">
+    <a class="product-link" asp-controller="Catalog" asp-action="Product" asp-route-id="@Model.Id">
+        <span class="swatch swatch-@Model.CategorySlug" aria-hidden="true">@Model.CategoryName.Substring(0, 1)</span>
+        <span class="eyebrow">@Model.CategoryName · @Model.Area</span>
+        <h3>@Model.Name</h3>
+        <p>@Model.StoreName · @Model.DistanceKm.ToString("0.0") km</p>
+    </a>
+    <div class="product-meta">
+        <strong>@Money.Taka(Model.Price)</strong>
+        <span>@Model.Unit · @Model.Stock in stock</span>
+    </div>
+    <form asp-controller="Cart" asp-action="Add" method="post">
+        <input type="hidden" name="productId" value="@Model.Id" />
+        <input type="hidden" name="quantity" value="1" />
+        <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+        <button type="submit" class="button">Add to basket</button>
+    </form>
+</article>

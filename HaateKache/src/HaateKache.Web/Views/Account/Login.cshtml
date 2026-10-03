@@ -1,0 +1,33 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Sign in";
+}
+<header class="page-head">
+    <p class="eyebrow">Account</p>
+    <h1>Sign in</h1>
+</header>
+<div class="split">
+    <form asp-action="Login" method="post" class="panel">
+        <input type="hidden" name="ReturnUrl" value="@Model.ReturnUrl" />
+        @if (!string.IsNullOrEmpty(Model.Error))
+        {
+            <p class="flash flash-bad" role="alert">@Model.Error</p>
+        }
+        <label for="Email">Email</label>
+        <input id="Email" name="Email" type="email" value="@Model.Email" autocomplete="username" required />
+        <label for="Password">Password</label>
+        <input id="Password" name="Password" type="password" autocomplete="current-password" required />
+        <button type="submit" class="button">Sign in</button>
+        <p><a asp-action="Register">Create a shopper account</a> · <a asp-action="VendorRegister">Register a store</a></p>
+    </form>
+    <aside class="panel demo-accounts">
+        <h2>Demo accounts</h2>
+        <ul class="plain">
+            <li><strong>Owner</strong> owner@@haatekache.bd · Owner#12345</li>
+            <li><strong>Shopper</strong> customer@@haatekache.bd · Shopper#12345</li>
+            <li><strong>Gulshan vendor</strong> vendor.gulshan@@haatekache.bd · Vendor#12345</li>
+            <li><strong>Pending vendor</strong> vendor.pending@@haatekache.bd · Vendor#12345</li>
+        </ul>
+        <p class="quiet">Other seeded stores use the same vendor password: Dhanmondi, Mirpur, Uttara, Banani, and Mohammadpur.</p>
+    </aside>
+</div>

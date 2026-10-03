@@ -1,0 +1,68 @@
+﻿@model HomeViewModel
+@{
+    ViewData["Title"] = "Close at hand";
+}
+<section class="hero">
+    <div>
+        <p class="eyebrow">Neighborhood pickup in Dhaka</p>
+        <h1>The shop down the lane, close at hand.</h1>
+        <p class="lede">Groceries, stationery, jewelry, and clothing from stores that already know the para. Choose a pickup point, pay with a test card or installments, and collect it yourself.</p>
+        <div class="hero-actions">
+            <a class="button" asp-controller="Stores" asp-action="Index">Find the nearest store</a>
+            <a class="button button-quiet" asp-controller="Catalog" asp-action="Category" asp-route-slug="groceries">Browse groceries</a>
+        </div>
+    </div>
+    <ol class="steps">
+        <li><strong>1. Stand somewhere</strong><span>Set your neighborhood. We rank stores by distance.</span></li>
+        <li><strong>2. Fill a basket</strong><span>Mix categories. Each store becomes its own pickup order.</span></li>
+        <li><strong>3. Pay and collect</strong><span>Card or buy now, pay later. The store marks it ready.</span></li>
+    </ol>
+</section>
+
+<partial name="_LocationBar" model="Model.Location" />
+
+<section>
+    <h2>Shop by category</h2>
+    <div class="category-grid">
+        @foreach (var category in Model.Categories)
+        {
+            <a class="category-tile tile-@category.Slug" asp-controller="Catalog" asp-action="Category" asp-route-slug="@category.Slug">
+                <span>@category.Name</span>
+                <small>@category.Description</small>
+            </a>
+        }
+    </div>
+</section>
+
+<section>
+    <div class="section-head">
+        <h2>Nearest pickup</h2>
+        <a asp-controller="Stores" asp-action="Index">All stores</a>
+    </div>
+    <div class="store-grid">
+        @foreach (var item in Model.NearestStores)
+        {
+            <article class="store-card">
+                @if (item.IsNearest)
+                {
+                    <span class="badge">Nearest</span>
+                }
+                <h3>@item.Store.Name</h3>
+                <p>@item.Store.Area · @item.DistanceKm.ToString("0.0") km</p>
+                <p>@item.Store.Address</p>
+                <p class="quiet">Open @item.Store.OpeningHours</p>
+                <a class="button button-small" asp-controller="Stores" asp-action="Details" asp-route-id="@item.Store.Id">Shop this store</a>
+            </article>
+        }
+    </div>
+</section>
+
+<section>
+    <h2>Near you right now</h2>
+    <div class="product-grid">
+        @foreach (var product in Model.Featured)
+        {
+            <partial name="_ProductCard" model="product" />
+        }
+    </div>
+</section>

@@ -1,0 +1,38 @@
+@model ProductForm
+@{
+    ViewData["Title"] = Model.Id == 0 ? "Add product" : "Edit product";
+}
+<header class="page-head">
+    <h1>@(Model.Id == 0 ? "Add a product" : "Edit product")</h1>
+</header>
+<form asp-action="EditProduct" method="post" class="panel narrow">
+    <input type="hidden" name="Id" value="@Model.Id" />
+    @if (!string.IsNullOrEmpty(Model.Error))
+    {
+        <p class="flash flash-bad" role="alert">@Model.Error</p>
+    }
+    <label for="Name">Name</label>
+    <input id="Name" name="Name" value="@Model.Name" required />
+    <label for="Description">Description</label>
+    <textarea id="Description" name="Description" rows="3">@Model.Description</textarea>
+    <label for="CategoryId">Category</label>
+    <select id="CategoryId" name="CategoryId" asp-for="CategoryId" asp-items="@(new SelectList(Model.Categories, nameof(Category.Id), nameof(Category.Name)))"></select>
+    <div class="pair">
+        <div>
+            <label for="Price">Price (BDT)</label>
+            <input id="Price" name="Price" type="number" min="1" step="0.01" value="@Model.Price.ToString(System.Globalization.CultureInfo.InvariantCulture)" required />
+        </div>
+        <div>
+            <label for="Stock">Stock</label>
+            <input id="Stock" name="Stock" type="number" min="0" step="1" value="@Model.Stock" required />
+        </div>
+    </div>
+    <label for="Unit">Unit</label>
+    <input id="Unit" name="Unit" value="@Model.Unit" />
+    <label class="choice">
+        <input type="checkbox" name="IsActive" value="true" @(Model.IsActive ? "checked" : null) />
+        Visible on the storefront
+    </label>
+    <input type="hidden" name="IsActive" value="false" />
+    <button type="submit" class="button">Save product</button>
+</form>

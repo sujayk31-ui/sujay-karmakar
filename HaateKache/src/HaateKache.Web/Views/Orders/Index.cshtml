@@ -1,0 +1,34 @@
+@model List<Order>
+@{
+    ViewData["Title"] = "Your orders";
+}
+<header class="page-head">
+    <p class="eyebrow">Shopper</p>
+    <h1>Your orders</h1>
+</header>
+@if (Model.Count == 0)
+{
+    <p class="empty">You have not placed an order yet.</p>
+}
+else
+{
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Order</th><th>Store</th><th>Status</th><th>Payment</th><th>Total</th></tr>
+            </thead>
+            <tbody>
+            @foreach (var order in Model)
+            {
+                <tr>
+                    <td><a asp-action="Details" asp-route-id="@order.Id">@order.OrderNumber</a><div class="quiet">@DhakaTime.Format(order.CreatedAt)</div></td>
+                    <td>@order.Store?.Name</td>
+                    <td><span class="pill pill-@order.Status">@StatusText.Label(order.Status)</span></td>
+                    <td>@StatusText.PayMethod(order.PaymentMethod)@(order.Installments.Count > 0 ? $" · {order.Installments.Count} installments" : "")</td>
+                    <td>@Money.Taka(order.Total)</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

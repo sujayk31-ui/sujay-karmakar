@@ -1,0 +1,42 @@
+@model List<Store>
+@{
+    ViewData["Title"] = "Vendors";
+}
+<header class="page-head">
+    <p class="eyebrow">Owner</p>
+    <h1>Vendor registrations</h1>
+</header>
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr><th>Store</th><th>Owner</th><th>Area</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody>
+        @foreach (var store in Model)
+        {
+            <tr>
+                <td>@store.Name<div class="quiet">@store.Address</div></td>
+                <td>@store.Owner?.FullName<div class="quiet">@store.Owner?.Email</div></td>
+                <td>@store.Area<br /><span class="quiet">@store.Latitude.ToString("0.0000") , @store.Longitude.ToString("0.0000")</span></td>
+                <td><span class="pill pill-@store.ApprovalStatus">@StatusText.Approval(store.ApprovalStatus)</span></td>
+                <td class="actions">
+                    @if (store.ApprovalStatus != StoreApprovalStatus.Approved)
+                    {
+                        <form asp-action="Approve" method="post">
+                            <input type="hidden" name="id" value="@store.Id" />
+                            <button class="button button-small" type="submit">Approve</button>
+                        </form>
+                    }
+                    @if (store.ApprovalStatus != StoreApprovalStatus.Rejected)
+                    {
+                        <form asp-action="Reject" method="post">
+                            <input type="hidden" name="id" value="@store.Id" />
+                            <button class="button button-small button-danger" type="submit">Reject</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

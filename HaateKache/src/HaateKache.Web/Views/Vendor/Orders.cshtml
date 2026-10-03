@@ -1,0 +1,40 @@
+@model List<Order>
+@{
+    ViewData["Title"] = "Store orders";
+    var current = ViewData["Status"] as string ?? "";
+}
+<header class="page-head">
+    <p class="eyebrow">@ViewData["StoreName"]</p>
+    <h1>Orders</h1>
+</header>
+<p class="chips">
+    <a class="chip @(current == "" ? "is-active" : null)" asp-action="Orders">All</a>
+    @foreach (var status in Enum.GetValues<OrderStatus>())
+    {
+        <a class="chip @(current == status.ToString() ? "is-active" : null)" asp-action="Orders" asp-route-status="@status">@StatusText.Label(status)</a>
+    }
+</p>
+@if (Model.Count == 0)
+{
+    <p class="empty">No orders in this view.</p>
+}
+else
+{
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Order</th><th>Customer</th><th>Status</th><th>Payment</th><th>Total</th></tr></thead>
+            <tbody>
+            @foreach (var order in Model)
+            {
+                <tr>
+                    <td><a asp-action="Order" asp-route-id="@order.Id">@order.OrderNumber</a><div class="quiet">@DhakaTime.Format(order.CreatedAt)</div></td>
+                    <td>@order.Customer?.FullName</td>
+                    <td><span class="pill pill-@order.Status">@StatusText.Label(order.Status)</span></td>
+                    <td>@StatusText.PayMethod(order.PaymentMethod)</td>
+                    <td>@Money.Taka(order.Total)</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

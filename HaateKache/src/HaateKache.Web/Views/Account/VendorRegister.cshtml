@@ -1,0 +1,52 @@
+@model VendorRegisterViewModel
+@{
+    ViewData["Title"] = "Register a store";
+}
+<header class="page-head">
+    <p class="eyebrow">Vendor</p>
+    <h1>Open a pickup store</h1>
+    <p>The owner reviews the registration before the store can sell. You can sign in while it is pending.</p>
+</header>
+<form asp-action="VendorRegister" method="post" class="panel narrow">
+    @if (!string.IsNullOrEmpty(Model.Error))
+    {
+        <p class="flash flash-bad" role="alert">@Model.Error</p>
+    }
+    <label for="FullName">Your name</label>
+    <input id="FullName" name="FullName" value="@Model.FullName" required />
+    <label for="Email">Email</label>
+    <input id="Email" name="Email" type="email" value="@Model.Email" required />
+    <label for="Phone">Phone</label>
+    <input id="Phone" name="Phone" value="@Model.Phone" />
+    <label for="Password">Password</label>
+    <input id="Password" name="Password" type="password" required />
+    <label for="ConfirmPassword">Confirm password</label>
+    <input id="ConfirmPassword" name="ConfirmPassword" type="password" required />
+    <label for="StoreName">Store name</label>
+    <input id="StoreName" name="StoreName" value="@Model.StoreName" required />
+    <label for="Description">What you sell</label>
+    <textarea id="Description" name="Description" rows="3">@Model.Description</textarea>
+    <label for="Address">Pickup address</label>
+    <input id="Address" name="Address" value="@Model.Address" required />
+    <label for="Area">Neighborhood</label>
+    <input id="Area" name="Area" value="@Model.Area" required />
+    <div class="chips" id="area-presets">
+        @foreach (var area in Neighborhoods.All)
+        {
+            <button type="button" class="chip area-preset" data-area="@area.Label" data-lat="@area.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture)" data-lng="@area.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture)">@area.Label</button>
+        }
+    </div>
+    <div class="pair">
+        <div>
+            <label for="Latitude">Latitude</label>
+            <input id="Latitude" name="Latitude" value="@Model.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture)" required />
+        </div>
+        <div>
+            <label for="Longitude">Longitude</label>
+            <input id="Longitude" name="Longitude" value="@Model.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture)" required />
+        </div>
+    </div>
+    <label for="OpeningHours">Opening hours</label>
+    <input id="OpeningHours" name="OpeningHours" value="@Model.OpeningHours" />
+    <button type="submit" class="button">Submit for approval</button>
+</form>

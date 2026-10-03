@@ -1,0 +1,29 @@
+@model List<Product>
+@{
+    ViewData["Title"] = "Products";
+}
+<header class="page-head">
+    <p class="eyebrow">@ViewData["StoreName"]</p>
+    <h1>Products</h1>
+</header>
+<p><a class="button" asp-action="EditProduct">Add product</a></p>
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody>
+        @foreach (var product in Model)
+        {
+            <tr>
+                <td>@product.Name<div class="quiet">@product.Sku</div></td>
+                <td>@product.Category?.Name</td>
+                <td>@Money.Taka(product.Price)</td>
+                <td>@product.Stock @product.Unit</td>
+                <td>@(product.IsActive ? "On the shelf" : "Hidden")</td>
+                <td><a asp-action="EditProduct" asp-route-id="@product.Id">Edit</a></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,28 @@
+@model Order
+@{
+    ViewData["Title"] = Model.OrderNumber;
+}
+<header class="page-head">
+    <p class="eyebrow">Store order</p>
+    <h1>@Model.OrderNumber</h1>
+</header>
+<partial name="_OrderBody" model="Model" />
+<div class="actions">
+    @if (Model.Status == OrderStatus.Pending)
+    {
+        <form asp-action="Accept" method="post"><input type="hidden" name="id" value="@Model.Id" /><button class="button" type="submit">Accept</button></form>
+    }
+    @if (Model.Status == OrderStatus.Accepted)
+    {
+        <form asp-action="Ready" method="post"><input type="hidden" name="id" value="@Model.Id" /><button class="button" type="submit">Ready for pickup</button></form>
+    }
+    @if (Model.Status == OrderStatus.ReadyForPickup)
+    {
+        <form asp-action="Complete" method="post"><input type="hidden" name="id" value="@Model.Id" /><button class="button" type="submit">Completed</button></form>
+    }
+    @if (Model.Status is OrderStatus.Pending or OrderStatus.Accepted or OrderStatus.ReadyForPickup)
+    {
+        <form asp-action="Cancel" method="post"><input type="hidden" name="id" value="@Model.Id" /><button class="button button-danger" type="submit">Cancel</button></form>
+    }
+</div>
+<p><a asp-action="Orders">All store orders</a></p>

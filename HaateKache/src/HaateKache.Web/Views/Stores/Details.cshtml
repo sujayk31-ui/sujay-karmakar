@@ -1,0 +1,24 @@
+@model StoreDetailView
+@{
+    ViewData["Title"] = Model.Store.Store.Name;
+}
+<header class="page-head">
+    <p class="eyebrow">@Model.Store.Store.Area · @Model.Store.DistanceKm.ToString("0.0") km from @Model.Location.Label</p>
+    <h1>@Model.Store.Store.Name</h1>
+    <p>@Model.Store.Store.Description</p>
+    <p class="quiet">@Model.Store.Store.Address · @Model.Store.Store.Phone · Open @Model.Store.Store.OpeningHours</p>
+</header>
+<partial name="_Map" model="Model.Map" />
+@if (Model.Products.Count == 0)
+{
+    <p class="empty">This store has nothing in stock yet.</p>
+}
+else
+{
+    <div class="product-grid">
+        @foreach (var product in Model.Products)
+        {
+            <partial name="_ProductCard" model="product" />
+        }
+    </div>
+}

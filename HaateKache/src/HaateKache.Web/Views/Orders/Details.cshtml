@@ -1,0 +1,10 @@
+@model Order
+@{
+    ViewData["Title"] = Model.OrderNumber;
+}
+<header class="page-head">
+    <p class="eyebrow">Your order</p>
+    <h1>@Model.OrderNumber</h1>
+</header>
+<partial name="_OrderBody" model="Model" />
+<a class="button button-quiet" asp-action="Index">All orders</a>

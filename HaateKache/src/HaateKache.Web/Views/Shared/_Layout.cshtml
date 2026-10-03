@@ -1,0 +1,81 @@
+﻿@{
+    var cartCount = ViewData["CartCount"] as int? ?? 0;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] · Haate Kache</title>
+    <link rel="icon" href="~/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-header">
+        <a class="brand" asp-controller="Home" asp-action="Index">
+            <span class="brand-mark" aria-hidden="true">হ</span>
+            <span class="brand-text">
+                <strong>Haate Kache</strong>
+                <small>হাতে কাছে · close at hand</small>
+            </span>
+        </a>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+        <nav id="site-nav" class="site-nav">
+            <a asp-controller="Catalog" asp-action="Category" asp-route-slug="groceries">Groceries</a>
+            <a asp-controller="Catalog" asp-action="Category" asp-route-slug="stationery">Stationery</a>
+            <a asp-controller="Catalog" asp-action="Category" asp-route-slug="jewelry">Jewelry</a>
+            <a asp-controller="Catalog" asp-action="Category" asp-route-slug="clothing">Clothing</a>
+            <a asp-controller="Stores" asp-action="Index">Pickup</a>
+            <a asp-controller="Cart" asp-action="Index">Basket@(cartCount > 0 ? $" ({cartCount})" : "")</a>
+            @if (User.IsInRole("Vendor"))
+            {
+                <a asp-controller="Vendor" asp-action="Dashboard">My store</a>
+            }
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-controller="Admin" asp-action="Dashboard">Owner</a>
+            }
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <a asp-controller="Orders" asp-action="Index">Orders</a>
+                <form asp-controller="Account" asp-action="Logout" method="post" class="inline-form">
+                    <button type="submit" class="linkish">Sign out</button>
+                </form>
+            }
+            else
+            {
+                <a asp-controller="Account" asp-action="Login">Sign in</a>
+            }
+        </nav>
+    </header>
+    <form class="search-bar" action="/shop/search" method="get">
+        <label class="sr-only" for="q">Search products</label>
+        <input id="q" type="search" name="q" value="@Context.Request.Query["q"]" placeholder="Search rice, paper, saree, jewelry…" />
+        <button type="submit">Search</button>
+    </form>
+    <main id="main">
+        @if (TempData["Success"] is string success)
+        {
+            <p class="flash flash-ok" role="status">@success</p>
+        }
+        @if (TempData["Error"] is string error)
+        {
+            <p class="flash flash-bad" role="alert">@error</p>
+        }
+        @RenderBody()
+    </main>
+    <footer class="site-footer">
+        <div>
+            <strong>Haate Kache</strong>
+            <p>Neighborhood pickup for groceries, stationery, jewelry, and clothing in Dhaka. Card numbers are authorized and never stored.</p>
+        </div>
+        <div>
+            <a asp-controller="Account" asp-action="VendorRegister">Sell from your store</a>
+            <a asp-controller="Stores" asp-action="Index">Nearest pickup</a>
+            <a asp-controller="Account" asp-action="Register">Create a shopper account</a>
+        </div>
+    </footer>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+</body>
+</html>
