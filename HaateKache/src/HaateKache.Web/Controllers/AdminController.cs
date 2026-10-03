@@ -46,9 +46,14 @@ public class AdminController : Controller
             .Take(8)
             .ToListAsync();
 
-        var scheduled = await _db.Installments
-            .Where(i => i.Status == InstallmentStatus.Scheduled && i.Order!.Status != OrderStatus.Cancelled)
-            .SumAsync(i => (decimal?)i.Amount) ?? 0m;
+        var scheduledRows = await _db.Installments
+            .AsNoTracking()
+            .Include(i => i.Order)
+            .Where(i => i.Status == InstallmentStatus.Scheduled)
+            .ToListAsync();
+        var scheduled = scheduledRows
+            .Where(i => i.Order is not null && i.Order.Status != OrderStatus.Cancelled)
+            .Sum(i => i.Amount);
 
         return View(new AdminDashboardView
         {
