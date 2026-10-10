@@ -14,6 +14,8 @@ dotnet build
 dotnet run --project src/HaateKache.Web --urls http://localhost:5080
 ```
 
+On Windows, double-click `HaateKache\start.bat` to run.
+
 Open http://localhost:5080. The first launch creates `HaateKache/src/HaateKache.Web/haatekache.db` (SQLite) and seeds stores, products, and sample orders. Delete that file to seed again.
 
 ```bash
