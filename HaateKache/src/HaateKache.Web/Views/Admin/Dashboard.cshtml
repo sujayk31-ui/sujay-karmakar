@@ -1,0 +1,57 @@
+@model AdminDashboardView
+@{
+    ViewData["Title"] = "Owner dashboard";
+    var maxRevenue = Model.Categories.Count == 0 ? 1m : Math.Max(1m, Model.Categories.Max(c => c.Revenue));
+}
+<header class="page-head">
+    <p class="eyebrow">Owner</p>
+    <h1>Haate Kache at a glance</h1>
+    <p>Authorized sales exclude cancelled orders. Category revenue is the sum of line totals.</p>
+</header>
+<div class="stat-grid">
+    <article><span>Sales revenue</span><strong>@Money.Taka(Model.Revenue)</strong></article>
+    <article><span>Orders</span><strong>@Model.OrderCount</strong></article>
+    <article><span>Approved stores</span><strong>@Model.StoreCount</strong></article>
+    <article><span>Vendors waiting</span><strong>@Model.PendingVendors</strong></article>
+    <article><span>BNPL still scheduled</span><strong>@Money.Taka(Model.ScheduledBnpl)</strong></article>
+</div>
+<p class="actions">
+    <a class="button" asp-action="Vendors">Vendor registrations</a>
+    <a class="button button-quiet" asp-action="Orders">All orders</a>
+</p>
+<section>
+    <h2>Orders and revenue by category</h2>
+    <div class="bars">
+        @foreach (var category in Model.Categories)
+        {
+            var width = (double)(category.Revenue / maxRevenue * 100m);
+            <div class="bar-row">
+                <div class="bar-label">
+                    <strong>@category.Category</strong>
+                    <span>@category.OrderCount orders · @category.Units units · @Money.Taka(category.Revenue)</span>
+                </div>
+                <div class="bar-track"><span class="bar-fill fill-@category.Slug" style="width: @width.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)%"></span></div>
+            </div>
+        }
+    </div>
+</section>
+<section>
+    <h2>Recent orders</h2>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Order</th><th>Store</th><th>Customer</th><th>Status</th><th>Total</th></tr></thead>
+            <tbody>
+            @foreach (var order in Model.RecentOrders)
+            {
+                <tr>
+                    <td><a asp-action="Order" asp-route-id="@order.Id">@order.OrderNumber</a></td>
+                    <td>@order.Store?.Name</td>
+                    <td>@order.Customer?.FullName</td>
+                    <td><span class="pill pill-@order.Status">@StatusText.Label(order.Status)</span></td>
+                    <td>@Money.Taka(order.Total)</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>

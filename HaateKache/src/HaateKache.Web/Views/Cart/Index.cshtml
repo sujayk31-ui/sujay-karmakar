@@ -1,0 +1,49 @@
+@model CartPageView
+@{
+    ViewData["Title"] = "Basket";
+}
+<header class="page-head">
+    <p class="eyebrow">Basket</p>
+    <h1>What you are picking up</h1>
+</header>
+@if (Model.Lines.Count == 0)
+{
+    <p class="empty">Your basket is empty. Start with a category or the nearest store.</p>
+    <a class="button" asp-controller="Home" asp-action="Index">Back to the lane</a>
+}
+else
+{
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Item</th><th>Store</th><th>Distance</th><th>Qty</th><th>Total</th></tr>
+            </thead>
+            <tbody>
+            @foreach (var line in Model.Lines)
+            {
+                <tr>
+                    <td>
+                        <a asp-controller="Catalog" asp-action="Product" asp-route-id="@line.ProductId">@line.Name</a>
+                        <div class="quiet">@line.CategoryName · @Money.Taka(line.UnitPrice)</div>
+                    </td>
+                    <td>@line.StoreName<br /><span class="quiet">@line.Area</span></td>
+                    <td>@line.DistanceKm.ToString("0.0") km</td>
+                    <td>
+                        <form asp-action="Update" method="post" class="qty-form">
+                            <input type="hidden" name="productId" value="@line.ProductId" />
+                            <input type="number" name="quantity" min="0" max="@line.Stock" value="@line.Quantity" aria-label="Quantity for @line.Name" />
+                            <button type="submit" class="button button-small">Update</button>
+                        </form>
+                    </td>
+                    <td>@Money.Taka(line.LineTotal)</td>
+                </tr>
+            }
+            </tbody>
+            <tfoot>
+                <tr><td colspan="4">Total</td><td>@Money.Taka(Model.Total)</td></tr>
+            </tfoot>
+        </table>
+    </div>
+    <p class="quiet">Set quantity to 0 to remove an item. Items from different stores are checked out as separate pickup orders.</p>
+    <a class="button" asp-controller="Checkout" asp-action="Index">Checkout</a>
+}

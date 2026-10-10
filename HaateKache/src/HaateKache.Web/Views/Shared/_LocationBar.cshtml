@@ -1,0 +1,18 @@
+@model ShopperLocation
+<form class="location-bar" asp-controller="Home" asp-action="SetLocation" method="post">
+    <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+    <p>Distances from <strong>@Model.Label</strong></p>
+    <div class="chips">
+        @foreach (var area in Neighborhoods.All)
+        {
+            <button type="submit" name="preset" value="@area.Label" class="chip @(area.Label == Model.Label ? "is-active" : null)">@area.Label</button>
+        }
+    </div>
+</form>
+<form id="geo-form" class="geo-form" asp-controller="Home" asp-action="SetLocation" method="post">
+    <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+    <input type="hidden" name="latitude" id="geo-lat" />
+    <input type="hidden" name="longitude" id="geo-lng" />
+    <input type="hidden" name="label" value="Your location" />
+    <button type="button" id="use-my-location" class="button button-quiet">Use my location</button>
+</form>

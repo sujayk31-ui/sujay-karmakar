@@ -1,0 +1,26 @@
+@model List<Order>
+@{
+    ViewData["Title"] = "All orders";
+}
+<header class="page-head">
+    <p class="eyebrow">Owner</p>
+    <h1>All orders</h1>
+</header>
+<div class="table-wrap">
+    <table>
+        <thead><tr><th>Order</th><th>Store</th><th>Customer</th><th>Status</th><th>Payment</th><th>Total</th></tr></thead>
+        <tbody>
+        @foreach (var order in Model)
+        {
+            <tr>
+                <td><a asp-action="Order" asp-route-id="@order.Id">@order.OrderNumber</a><div class="quiet">@DhakaTime.Format(order.CreatedAt)</div></td>
+                <td>@order.Store?.Name</td>
+                <td>@order.Customer?.FullName</td>
+                <td><span class="pill pill-@order.Status">@StatusText.Label(order.Status)</span></td>
+                <td>@StatusText.PayMethod(order.PaymentMethod) · @order.Payment?.CardLast4</td>
+                <td>@Money.Taka(order.Total)</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

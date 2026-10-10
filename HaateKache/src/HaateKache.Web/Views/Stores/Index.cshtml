@@ -1,0 +1,30 @@
+@model StoreListView
+@{
+    ViewData["Title"] = "Pickup points";
+}
+<header class="page-head">
+    <p class="eyebrow">Pickup points</p>
+    <h1>Stores closest to @Model.Location.Label</h1>
+    <p>Distance is the haversine between your point and each store. The map uses Google Maps only when an API key is configured. Otherwise it is Leaflet on OpenStreetMap.</p>
+</header>
+<partial name="_LocationBar" model="Model.Location" />
+<div class="split">
+    <div class="store-list">
+        @foreach (var item in Model.Stores)
+        {
+            <article class="store-card">
+                @if (item.IsNearest)
+                {
+                    <span class="badge">Nearest</span>
+                }
+                <h2>@item.Store.Name</h2>
+                <p><strong>@item.DistanceKm.ToString("0.0") km</strong> · @item.Store.Area</p>
+                <p>@item.Store.Address</p>
+                <p>@item.Store.Description</p>
+                <p class="quiet">@item.Store.Phone · Open @item.Store.OpeningHours</p>
+                <a class="button button-small" asp-controller="Stores" asp-action="Details" asp-route-id="@item.Store.Id">Shop this store</a>
+            </article>
+        }
+    </div>
+    <partial name="_Map" model="Model.Map" />
+</div>

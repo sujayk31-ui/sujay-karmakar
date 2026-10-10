@@ -1,0 +1,81 @@
+@model CheckoutPageView
+@{
+    ViewData["Title"] = "Checkout";
+}
+<header class="page-head">
+    <p class="eyebrow">Checkout</p>
+    <h1>Pay and choose pickup</h1>
+    <p>Each store in the basket becomes its own order. The demo gateway authorizes a test card and stores only the brand, last four digits, and an authorization code.</p>
+</header>
+@if (!string.IsNullOrEmpty(Model.Error))
+{
+    <p class="flash flash-bad" role="alert">@Model.Error Re-enter the card. It is not kept on this page.</p>
+}
+<div class="split checkout-split">
+    <div>
+        @foreach (var group in Model.Groups)
+        {
+            <article class="store-card">
+                <h2>Pickup at @group.StoreName</h2>
+                <p>@group.Address, @group.Area · @group.DistanceKm.ToString("0.0") km</p>
+                <ul class="plain">
+                    @foreach (var line in group.Lines)
+                    {
+                        <li>@line.Quantity × @line.Name <span>@Money.Taka(line.LineTotal)</span></li>
+                    }
+                </ul>
+                <p><strong>@Money.Taka(group.Subtotal)</strong></p>
+            </article>
+        }
+        <p class="total-line">Combined total @Money.Taka(Model.Total)</p>
+    </div>
+    <form asp-action="Index" method="post" class="panel" autocomplete="off">
+        <fieldset>
+            <legend>How to pay</legend>
+            <label class="choice">
+                <input type="radio" name="PaymentMethod" value="Card" @(Model.Form.PaymentMethod != "Bnpl" ? "checked" : null) />
+                Pay in full by card
+            </label>
+            <label class="choice">
+                <input type="radio" name="PaymentMethod" value="Bnpl" @(Model.Form.PaymentMethod == "Bnpl" ? "checked" : null) />
+                Buy now, pay later
+            </label>
+        </fieldset>
+        <fieldset id="installment-fields">
+            <legend>Installments</legend>
+            <label class="choice">
+                <input type="radio" name="InstallmentCount" value="3" @(Model.Form.InstallmentCount != 4 ? "checked" : null) />
+                3 monthly payments
+            </label>
+            <label class="choice">
+                <input type="radio" name="InstallmentCount" value="4" @(Model.Form.InstallmentCount == 4 ? "checked" : null) />
+                4 payments, every 14 days
+            </label>
+            @foreach (var group in Model.Groups)
+            {
+                var three = InstallmentSchedule.Split(group.Subtotal, 3);
+                var four = InstallmentSchedule.Split(group.Subtotal, 4);
+                <p class="quiet">@group.StoreName: first of 3 is @Money.Taka(three[0]), first of 4 is @Money.Taka(four[0]). The rest stays on the schedule until due. This demo does not collect later installments.</p>
+            }
+        </fieldset>
+        <fieldset>
+            <legend>Card</legend>
+            <label for="CardholderName">Name on card</label>
+            <input id="CardholderName" name="CardholderName" value="@Model.Form.CardholderName" autocomplete="off" required />
+            <label for="CardNumber">Card number</label>
+            <input id="CardNumber" name="CardNumber" inputmode="numeric" autocomplete="off" placeholder="4242 4242 4242 4242" required />
+            <div class="pair">
+                <div>
+                    <label for="Expiry">Expiry</label>
+                    <input id="Expiry" name="Expiry" value="@Model.Form.Expiry" placeholder="MM/YY" autocomplete="off" required />
+                </div>
+                <div>
+                    <label for="Cvc">CVC</label>
+                    <input id="Cvc" name="Cvc" inputmode="numeric" autocomplete="off" required />
+                </div>
+            </div>
+            <p class="quiet">Demo success: 4242 4242 4242 4242. Demo decline: 4000 0000 0000 0002. Any future expiry and a 3-digit code. No charge is sent unless a Stripe test key is configured in the environment, and the full number is never written to the database.</p>
+        </fieldset>
+        <button type="submit" class="button">Place pickup order</button>
+    </form>
+</div>

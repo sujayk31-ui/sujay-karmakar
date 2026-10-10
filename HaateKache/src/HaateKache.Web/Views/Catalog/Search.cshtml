@@ -1,0 +1,22 @@
+@model SearchPageView
+@{
+    ViewData["Title"] = "Search";
+}
+<header class="page-head">
+    <p class="eyebrow">Search</p>
+    <h1>@(string.IsNullOrWhiteSpace(Model.Query) ? "Everything in stock" : $"Results for “{Model.Query}”")</h1>
+    <p>@Model.Products.Count items, nearest to @Model.Location.Label first.</p>
+</header>
+@if (Model.Products.Count == 0)
+{
+    <p class="empty">No products matched that search.</p>
+}
+else
+{
+    <div class="product-grid">
+        @foreach (var product in Model.Products)
+        {
+            <partial name="_ProductCard" model="product" />
+        }
+    </div>
+}

@@ -1,0 +1,28 @@
+@model ProductCardView
+@{
+    ViewData["Title"] = Model.Name;
+}
+<article class="product-detail">
+    <div class="swatch swatch-lg swatch-@Model.CategorySlug" aria-hidden="true">@Model.CategoryName.Substring(0, 1)</div>
+    <div>
+        <p class="eyebrow"><a asp-controller="Catalog" asp-action="Category" asp-route-slug="@Model.CategorySlug">@Model.CategoryName</a></p>
+        <h1>@Model.Name</h1>
+        <p class="lede">@Model.Description</p>
+        <p class="price">@Money.Taka(Model.Price) <span>per @Model.Unit</span></p>
+        <p>Pickup at <a asp-controller="Stores" asp-action="Details" asp-route-id="@Model.StoreId">@Model.StoreName</a>, @Model.Area · @Model.DistanceKm.ToString("0.0") km from @* location is on the card only *@ your chosen point.</p>
+        <p class="quiet">@Model.Address · Open @Model.OpeningHours · @Model.Stock in stock</p>
+        @if (Model.Stock > 0)
+        {
+            <form asp-controller="Cart" asp-action="Add" method="post" class="qty-form">
+                <label for="quantity">Quantity</label>
+                <input id="quantity" type="number" name="quantity" min="1" max="@Math.Min(Model.Stock, 20)" value="1" />
+                <input type="hidden" name="productId" value="@Model.Id" />
+                <button type="submit" class="button">Add to basket</button>
+            </form>
+        }
+        else
+        {
+            <p class="flash flash-bad">Out of stock.</p>
+        }
+    </div>
+</article>

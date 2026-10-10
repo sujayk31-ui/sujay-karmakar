@@ -1,0 +1,71 @@
+@model Order
+<section class="order-block">
+    <header class="order-head">
+        <div>
+            <p class="eyebrow">@Model.OrderNumber</p>
+            <h2>@Model.Store?.Name</h2>
+            <p>@Model.Store?.Address, @Model.Store?.Area · Pickup @Model.Store?.OpeningHours</p>
+        </div>
+        <span class="pill pill-@Model.Status">@StatusText.Label(Model.Status)</span>
+    </header>
+    <p class="quiet">Placed @DhakaTime.Format(Model.CreatedAt)
+        @if (Model.Customer is not null)
+        {
+            <span> · @Model.Customer.FullName (@Model.Customer.Email)</span>
+        }
+    </p>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Item</th><th>Category</th><th>Qty</th><th>Price</th><th>Total</th></tr>
+            </thead>
+            <tbody>
+            @foreach (var line in Model.Lines)
+            {
+                <tr>
+                    <td>@line.ProductName</td>
+                    <td>@line.CategoryName</td>
+                    <td>@line.Quantity</td>
+                    <td>@Money.Taka(line.UnitPrice)</td>
+                    <td>@Money.Taka(line.LineTotal)</td>
+                </tr>
+            }
+            </tbody>
+            <tfoot>
+                <tr><td colspan="4">Order total</td><td>@Money.Taka(Model.Total)</td></tr>
+            </tfoot>
+        </table>
+    </div>
+    @if (Model.Payment is not null)
+    {
+        <p class="pay-line">
+            @StatusText.PayMethod(Model.PaymentMethod) ·
+            @Model.Payment.CardBrand ···· @Model.Payment.CardLast4 ·
+            @Model.Payment.Gateway @Model.Payment.Status.ToLowerInvariant()
+            @Model.Payment.AuthorizationCode ·
+            authorized @Money.Taka(Model.Payment.AmountAuthorized)
+        </p>
+    }
+    @if (Model.Installments.Count > 0)
+    {
+        <h3>Installment schedule</h3>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr><th>#</th><th>Due</th><th>Amount</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                @foreach (var installment in Model.Installments.OrderBy(i => i.Sequence))
+                {
+                    <tr>
+                        <td>@installment.Sequence</td>
+                        <td>@DhakaTime.FormatDate(installment.DueDate)</td>
+                        <td>@Money.Taka(installment.Amount)</td>
+                        <td>@StatusText.Installment(installment.Status)</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

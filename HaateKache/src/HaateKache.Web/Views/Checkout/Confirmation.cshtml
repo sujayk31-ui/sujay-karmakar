@@ -1,0 +1,14 @@
+@model List<Order>
+@{
+    ViewData["Title"] = "Order placed";
+}
+<header class="page-head">
+    <p class="eyebrow">Confirmed</p>
+    <h1>Your pickup @(Model.Count == 1 ? "order is" : "orders are") in</h1>
+    <p>The store will accept the order and tell you when it is ready. A buy-now-pay-later schedule is on the order for you, the store, and the owner.</p>
+</header>
+@foreach (var order in Model)
+{
+    <partial name="_OrderBody" model="order" />
+}
+<a class="button" asp-controller="Orders" asp-action="Index">View all orders</a>
