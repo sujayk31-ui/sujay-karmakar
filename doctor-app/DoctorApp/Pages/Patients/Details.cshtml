@@ -1,0 +1,47 @@
+@page "{id:int}"
+@model DetailsModel
+@{
+    ViewData["Title"] = Model.Person.Name;
+}
+
+<h1>@Model.Person.Name</h1>
+<p>Age @Model.Person.Age · @(Model.Person.WeightKg?.ToString("0.#") ?? "—") kg · BP @(Model.Person.LatestBloodPressure ?? "not recorded")</p>
+@if (!string.IsNullOrWhiteSpace(Model.Person.Phone))
+{
+    <p>Phone @Model.Person.Phone</p>
+}
+
+<h2 class="section-head">Visits</h2>
+@foreach (var rx in Model.Person.Prescriptions)
+{
+    <article class="visit">
+        <div class="rowline">
+            <strong>@rx.CreatedAt.ToLocalTime().ToString("dd MMM yyyy, HH:mm")</strong>
+            <a asp-page="/Prescriptions/Details" asp-route-id="@rx.Id">Open script</a>
+        </div>
+        <p>Dr. @rx.DoctorName, @rx.DoctorDegree · @PhoneNumbers.Display(rx.DoctorPhone)</p>
+        <p>Age @rx.PatientAge · @rx.PatientWeightKg.ToString("0.#") kg · BP @(string.IsNullOrWhiteSpace(rx.BloodPressure) ? "not recorded" : rx.BloodPressure)</p>
+        <p>Diagnosis: @(string.IsNullOrWhiteSpace(rx.Diagnosis) ? "not written" : rx.Diagnosis)</p>
+        @if (rx.Items.Count > 0)
+        {
+            <p><strong>Medicines</strong></p>
+            <ul>
+                @foreach (var item in rx.Items)
+                {
+                    <li>@(item.MedicineName + string.Join("", new[] { item.Dosage, item.Duration }.Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => $" · {s}")))</li>
+                }
+            </ul>
+        }
+        @if (rx.Tests.Count > 0)
+        {
+            <p><strong>Tests</strong></p>
+            <ul>
+                @foreach (var test in rx.Tests)
+                {
+                    <li>@test.Name@(test.IsCustom ? " (added by doctor)" : "")</li>
+                }
+            </ul>
+        }
+        <p><a href="@PrescriptionText.WhatsAppUrl(rx)" target="_blank" rel="noopener">Share this visit on WhatsApp</a></p>
+    </article>
+}

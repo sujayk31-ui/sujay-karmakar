@@ -1,51 +1,83 @@
-﻿<!DOCTYPE html>
+﻿@inject UserManager<ApplicationUser> Users
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Csrf
+@{
+    var tokens = Csrf.GetAndStoreTokens(Context);
+    var signedIn = User.Identity?.IsAuthenticated == true;
+    ApplicationUser? doctor = signedIn ? await Users.GetUserAsync(User) : null;
+    var page = ViewContext.RouteData.Values["page"]?.ToString() ?? "";
+    string Exact(string path) => page.Equals(path, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+    string Under(string path) => page.StartsWith(path, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+    var title = ViewData["Title"] as string;
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - DoctorApp</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#123732" />
+    <meta name="request-verification-token" content="@tokens.RequestToken" />
+    <title>@(string.IsNullOrEmpty(title) ? "Vaidya" : $"{title} · Vaidya")</title>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/DoctorApp.styles.css" asp-append-version="true" />
 </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Index">DoctorApp</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+<body class="@(signedIn ? "app" : "gate")">
+@if (signedIn)
+{
+    <aside class="sidebar">
+        <a class="mark" asp-page="/Index">Vaidya</a>
+        <nav class="side-links" aria-label="Clinic">
+            <a class="nav @Exact("/Index")" asp-page="/Index">Home</a>
+            <a class="nav @Exact("/Search")" asp-page="/Search">Search</a>
+            <a class="nav @Exact("/Diseases")" asp-page="/Diseases">Diseases</a>
+            <a class="nav @Exact("/Companies")" asp-page="/Companies">Companies</a>
+            <a class="nav @Exact("/Prescriptions/New")" asp-page="/Prescriptions/New">New prescription</a>
+            <a class="nav @Exact("/Prescriptions/Index")" asp-page="/Prescriptions/Index">Prescriptions</a>
+            <a class="nav @Under("/Patients")" asp-page="/Patients/Index">Patients</a>
+            <a class="nav @Under("/Medicines")" asp-page="/Medicines/Index">My medicines</a>
+            <a class="nav @Exact("/Account/Security")" asp-page="/Account/Security">Fingerprint and profile</a>
         </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+        <form method="post" asp-page="/Account/Logout">
+            <button type="submit">Sign out</button>
+        </form>
+    </aside>
+    <div class="shell">
+        <header class="topbar">
+            <a class="mark" asp-page="/Index">Vaidya</a>
+            <p class="who">Dr. @(string.IsNullOrWhiteSpace(doctor?.FullName) ? User.Identity?.Name : doctor!.FullName)</p>
+        </header>
+        <main>
             @RenderBody()
         </main>
     </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - DoctorApp - <a asp-area="" asp-page="/Privacy">Privacy</a>
-        </div>
-    </footer>
-
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-
-    @await RenderSectionAsync("Scripts", required: false)
+    <nav class="tabbar" aria-label="Clinic">
+        <a class="@Exact("/Index")" asp-page="/Index">
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1z"/></svg>
+            Home
+        </a>
+        <a class="@Exact("/Search")" asp-page="/Search">
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg>
+            Search
+        </a>
+        <a class="@Exact("/Prescriptions/New")" asp-page="/Prescriptions/New">
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>
+            New Rx
+        </a>
+        <a class="@Under("/Patients")" asp-page="/Patients/Index">
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><circle cx="17" cy="9" r="2.2"/><path d="M16 19a4.2 4.2 0 0 1 4.5-4"/></svg>
+            Patients
+        </a>
+        <a class="@Exact("/More")" asp-page="/More">
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 7h14M5 12h14M5 17h14"/></svg>
+            More
+        </a>
+    </nav>
+}
+else
+{
+    <main class="gate-main">
+        @RenderBody()
+    </main>
+}
+<script src="~/js/site.js" asp-append-version="true"></script>
+@await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

@@ -1,0 +1,61 @@
+@page
+@model SecurityModel
+@{
+    ViewData["Title"] = "Fingerprint and profile";
+}
+
+<h1>Fingerprint and profile</h1>
+<p class="lede">User ID <strong>@Model.Doctor.UserName</strong>. The password and PIN were set at registration. This page enrolls a fingerprint and edits the name printed on prescriptions.</p>
+@if (!string.IsNullOrEmpty(Model.Saved))
+{
+    <p class="banner">@Model.Saved</p>
+}
+
+<section class="card">
+    <h2>Prescription header</h2>
+    <form method="post" asp-page-handler="Profile">
+        <div asp-validation-summary="ModelOnly"></div>
+        <label asp-for="Profile.FullName"></label>
+        <input asp-for="Profile.FullName" />
+        <span asp-validation-for="Profile.FullName"></span>
+        <label asp-for="Profile.Degree"></label>
+        <input asp-for="Profile.Degree" />
+        <span asp-validation-for="Profile.Degree"></span>
+        <label asp-for="Profile.Phone"></label>
+        <input asp-for="Profile.Phone" inputmode="tel" />
+        <span asp-validation-for="Profile.Phone"></span>
+        <div class="actions">
+            <button type="submit">Save header</button>
+        </div>
+    </form>
+</section>
+
+<section class="card">
+    <h2>Fingerprint on this device</h2>
+    <p>Enrollment asks the browser for a platform authenticator, with a discoverable credential and user verification required. If this phone or computer has no fingerprint or face sensor the browser can use, Vaidya stops and says so.</p>
+    <label for="device-label">Name for this device</label>
+    <input id="device-label" value="This device" maxlength="80" />
+    <p id="enroll-status" class="muted" role="status"></p>
+    <div class="actions">
+        <button type="button" id="passkey-enroll">Save fingerprint on this device</button>
+    </div>
+    @if (Model.Credentials.Count == 0)
+    {
+        <p class="muted">No fingerprint is enrolled yet.</p>
+    }
+    else
+    {
+        @foreach (var credential in Model.Credentials)
+        {
+            <form method="post" asp-page-handler="Remove" class="rowline">
+                <input type="hidden" name="id" value="@credential.Id" />
+                <p><strong>@credential.DeviceLabel</strong><br /><span class="muted">@credential.CreatedAt.ToLocalTime().ToString("dd MMM yyyy")</span></p>
+                <button class="secondary small" type="submit">Remove</button>
+            </form>
+        }
+    }
+</section>
+
+@section Scripts {
+    <script src="~/js/webauthn.js" asp-append-version="true"></script>
+}

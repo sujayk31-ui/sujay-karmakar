@@ -1,0 +1,26 @@
+@page
+@model DiseasesModel
+@{
+    ViewData["Title"] = "Diseases";
+}
+
+<h1>Diseases</h1>
+<p class="lede">@Model.Categories.Count categories and @Model.SubcategoryCount subcategories. A subcategory opens the medicines tagged for that clinical search, including malaria and dengue as well as fever.</p>
+
+@foreach (var category in Model.Categories)
+{
+    <section class="card">
+        <h2>@category.Name</h2>
+        @if (!string.IsNullOrWhiteSpace(category.Icd11))
+        {
+            <p class="muted">@category.Icd11</p>
+        }
+        <p><a asp-page="/Search" asp-route-category="@category.Slug">All medicines in this category</a></p>
+        <div class="chips">
+            @foreach (var sub in category.Subcategories)
+            {
+                <a asp-page="/Search" asp-route-sub="@sub.Slug">@sub.Name</a>
+            }
+        </div>
+    </section>
+}

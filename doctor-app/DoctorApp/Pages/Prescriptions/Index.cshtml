@@ -1,0 +1,30 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Prescriptions";
+}
+
+<h1>Prescriptions</h1>
+<div class="actions">
+    <a class="button" asp-page="/Prescriptions/New">New prescription</a>
+</div>
+@if (Model.Items.Count == 0)
+{
+    <p class="lede">No prescriptions yet.</p>
+}
+else
+{
+    <div class="list" style="margin-top: 0.9rem">
+        @foreach (var rx in Model.Items)
+        {
+            <a class="med" asp-page="/Prescriptions/Details" asp-route-id="@rx.Id">
+                <div class="rowline">
+                    <strong>@rx.PatientName</strong>
+                    <span class="muted">@rx.CreatedAt.ToLocalTime().ToString("dd MMM yyyy")</span>
+                </div>
+                <p>Age @rx.PatientAge · @rx.PatientWeightKg.ToString("0.#") kg · BP @rx.BloodPressure</p>
+                <p class="muted">@(string.IsNullOrWhiteSpace(rx.Diagnosis) ? "No diagnosis written" : rx.Diagnosis)</p>
+            </a>
+        }
+    </div>
+}

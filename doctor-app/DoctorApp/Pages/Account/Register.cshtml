@@ -1,0 +1,50 @@
+@page
+@model RegisterModel
+@{
+    ViewData["Title"] = "Register";
+}
+
+<p class="mark">Vaidya</p>
+<h1>Register</h1>
+<p class="lede">Create the doctor account. The user ID and password, the 6-digit PIN, and a device fingerprint are three separate ways to sign in.</p>
+
+<form method="post" class="card">
+    <div asp-validation-summary="ModelOnly"></div>
+    <label asp-for="Input.FullName"></label>
+    <input asp-for="Input.FullName" autocomplete="name" />
+    <span asp-validation-for="Input.FullName"></span>
+
+    <label asp-for="Input.Degree"></label>
+    <input asp-for="Input.Degree" placeholder="MBBS, MD" autocomplete="organization-title" />
+    <span asp-validation-for="Input.Degree"></span>
+
+    <label asp-for="Input.Phone"></label>
+    <input asp-for="Input.Phone" inputmode="tel" autocomplete="tel" placeholder="10-digit mobile" />
+    <span asp-validation-for="Input.Phone"></span>
+
+    <label asp-for="Input.UserId"></label>
+    <input asp-for="Input.UserId" autocomplete="username" placeholder="letters, digits, . _ -" />
+    <span asp-validation-for="Input.UserId"></span>
+
+    <label asp-for="Input.Password"></label>
+    <input asp-for="Input.Password" type="password" autocomplete="new-password" />
+    <span asp-validation-for="Input.Password"></span>
+    <p class="muted">At least 8 characters, with a lowercase letter and a digit.</p>
+
+    <label asp-for="Input.ConfirmPassword"></label>
+    <input asp-for="Input.ConfirmPassword" type="password" autocomplete="new-password" />
+    <span asp-validation-for="Input.ConfirmPassword"></span>
+
+    <label asp-for="Input.Pin"></label>
+    <input asp-for="Input.Pin" inputmode="numeric" pattern="\d{6}" maxlength="6" autocomplete="off" />
+    <span asp-validation-for="Input.Pin"></span>
+
+    <label asp-for="Input.ConfirmPin"></label>
+    <input asp-for="Input.ConfirmPin" inputmode="numeric" pattern="\d{6}" maxlength="6" autocomplete="off" />
+    <span asp-validation-for="Input.ConfirmPin"></span>
+
+    <div class="actions">
+        <button type="submit">Create account</button>
+    </div>
+</form>
+<p>Already registered? <a asp-page="/Account/Login">Sign in</a></p>

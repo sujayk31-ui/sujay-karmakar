@@ -1,0 +1,43 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "My medicines";
+}
+
+<h1>My medicines</h1>
+<p class="lede">These rows are yours. Other doctors do not see them. They show up in your search and in the prescription picker. No price is stored, because you are not copying a printed MRP.</p>
+
+<form method="post" class="card">
+    <div asp-validation-summary="ModelOnly"></div>
+    <label asp-for="Name">Name</label>
+    <input asp-for="Name" />
+    <span asp-validation-for="Name"></span>
+    <label asp-for="Composition">Composition</label>
+    <input asp-for="Composition" placeholder="Paracetamol 125 mg / 5 ml" />
+    <span asp-validation-for="Composition"></span>
+    <label asp-for="CompanyName">Company, if you know it</label>
+    <input asp-for="CompanyName" />
+    <label asp-for="DoseForm">Form</label>
+    <input asp-for="DoseForm" placeholder="Syrup, tablet" />
+    <div class="actions">
+        <button type="submit">Add medicine</button>
+    </div>
+</form>
+
+@if (Model.Items.Count == 0)
+{
+    <p class="muted">You have not added a medicine yet.</p>
+}
+else
+{
+    <div class="list">
+        @foreach (var item in Model.Items)
+        {
+            <a class="med" asp-page="/Medicines/Edit" asp-route-id="@item.Id">
+                <strong>@item.Name</strong>
+                <p>@item.Composition</p>
+                <p class="muted">@(item.CompanyName ?? "No company")@(string.IsNullOrWhiteSpace(item.DoseForm) ? "" : $" · {item.DoseForm}")</p>
+            </a>
+        }
+    </div>
+}

@@ -1,0 +1,78 @@
+@page "{id:int}"
+@model DetailsModel
+@{
+    ViewData["Title"] = Model.Rx.PatientName;
+}
+
+<h1>@Model.Rx.PatientName</h1>
+<p class="muted">@Model.Rx.CreatedAt.ToLocalTime().ToString("dd MMM yyyy, HH:mm")</p>
+
+<section class="card">
+    <h2>Doctor</h2>
+    <p><strong>Dr. @Model.Rx.DoctorName</strong></p>
+    <p>@Model.Rx.DoctorDegree</p>
+    <p>@PhoneNumbers.Display(Model.Rx.DoctorPhone)</p>
+</section>
+
+<section class="card">
+    <h2>Patient</h2>
+    <p>Age @Model.Rx.PatientAge</p>
+    <p>Weight @Model.Rx.PatientWeightKg.ToString("0.#") kg</p>
+    <p>BP @(string.IsNullOrWhiteSpace(Model.Rx.BloodPressure) ? "not recorded" : Model.Rx.BloodPressure)</p>
+    @if (!string.IsNullOrWhiteSpace(Model.Rx.PatientPhone))
+    {
+        <p>Phone @Model.Rx.PatientPhone</p>
+    }
+    @if (!string.IsNullOrWhiteSpace(Model.Rx.Diagnosis))
+    {
+        <p>Diagnosis: @Model.Rx.Diagnosis</p>
+    }
+    <p><a asp-page="/Patients/Details" asp-route-id="@Model.Rx.PatientId">Patient history</a></p>
+</section>
+
+<section class="card">
+    <h2>Medicines</h2>
+    @if (Model.Rx.Items.Count == 0)
+    {
+        <p class="muted">No medicines on this script.</p>
+    }
+    <ol>
+        @foreach (var item in Model.Rx.Items)
+        {
+            <li>
+                <strong>@item.MedicineName</strong>
+                @if (!string.IsNullOrWhiteSpace(item.Composition))
+                {
+                    <p>@item.Composition</p>
+                }
+                @if (!string.IsNullOrWhiteSpace(item.CompanyName))
+                {
+                    <p class="muted">@item.CompanyName</p>
+                }
+                <p class="muted">@string.Join(" · ", new[] { item.Dosage, item.Duration, item.Instructions }.Where(s => !string.IsNullOrWhiteSpace(s)))</p>
+            </li>
+        }
+    </ol>
+</section>
+
+<section class="card">
+    <h2>Tests</h2>
+    @if (Model.Rx.Tests.Count == 0)
+    {
+        <p class="muted">No tests on this script.</p>
+    }
+    <ul>
+        @foreach (var test in Model.Rx.Tests)
+        {
+            <li>@test.Name@(test.IsCustom ? " (added by doctor)" : "")@((string.IsNullOrWhiteSpace(test.Category) ? "" : $" — {test.Category}"))</li>
+        }
+    </ul>
+</section>
+
+<section class="card">
+    <h2>Share</h2>
+    <div class="actions">
+        <a class="button" href="@Model.WhatsApp" target="_blank" rel="noopener">Share on WhatsApp</a>
+    </div>
+    <pre class="sheet">@Model.Text</pre>
+</section>

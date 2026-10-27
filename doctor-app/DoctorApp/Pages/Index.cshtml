@@ -1,10 +1,55 @@
 ﻿@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<h1>Dr. @Model.DoctorName</h1>
+<p class="lede">Search a disease, a company, or write the next prescription.</p>
+
+@if (!Model.HasPasskey)
+{
+    <div class="banner">
+        Password and PIN are ready.
+        <a asp-page="/Account/Security">Add fingerprint sign-in</a>
+        for this device if it has a platform authenticator.
+    </div>
+}
+
+<form class="card" method="get" asp-page="/Search">
+    <label for="q">Medicine, disease, or company</label>
+    <input id="q" name="q" placeholder="fever, malaria, Sun, paracetamol" />
+    <div class="actions">
+        <button type="submit">Search</button>
+    </div>
+</form>
+
+<div class="shortcuts">
+    <a class="shortcut fever" asp-page="/Search" asp-route-q="fever"><strong>Fever</strong><span>Antipyretics, not antimalarials</span></a>
+    <a class="shortcut malaria" asp-page="/Search" asp-route-q="malaria"><strong>Malaria</strong><span>Antimalarial rows</span></a>
+    <a class="shortcut dengue" asp-page="/Search" asp-route-q="dengue"><strong>Dengue</strong><span>Supportive-care rows</span></a>
+    <a class="shortcut" asp-page="/Diseases"><strong>Diseases</strong><span>Categories and subcategories</span></a>
+    <a class="shortcut" asp-page="/Companies"><strong>Companies</strong><span>Loaded brand tables</span></a>
+    <a class="shortcut" asp-page="/Prescriptions/New"><strong>New Rx</strong><span>Patient, medicines, tests</span></a>
 </div>
+
+<h2 class="section-head">Recent prescriptions</h2>
+@if (Model.Recent.Count == 0)
+{
+    <p class="muted">No prescriptions yet.</p>
+}
+else
+{
+    <div class="list">
+        @foreach (var rx in Model.Recent)
+        {
+            <a class="med" asp-page="/Prescriptions/Details" asp-route-id="@rx.Id">
+                <div class="rowline">
+                    <strong>@rx.PatientName</strong>
+                    <span class="muted">@rx.CreatedAt.ToLocalTime().ToString("dd MMM")</span>
+                </div>
+                <p class="muted">@(string.IsNullOrWhiteSpace(rx.Diagnosis) ? "No diagnosis written" : rx.Diagnosis)</p>
+            </a>
+        }
+    </div>
+}

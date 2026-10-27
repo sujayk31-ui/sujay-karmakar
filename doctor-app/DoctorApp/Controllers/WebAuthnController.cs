@@ -55,7 +55,7 @@ public class WebAuthnController : Controller
             AttestationConveyancePreference.None,
             null);
         HttpContext.Session.SetString("fido2.attestationOptions", options.ToJson());
-        return Json(options);
+        return Content(options.ToJson(), "application/json");
     }
 
     public sealed class EnrollRequest
@@ -113,7 +113,7 @@ public class WebAuthnController : Controller
             Array.Empty<PublicKeyCredentialDescriptor>(),
             UserVerificationRequirement.Required);
         HttpContext.Session.SetString("fido2.assertionOptions", options.ToJson());
-        return Json(options);
+        return Content(options.ToJson(), "application/json");
     }
 
     [HttpPost("login")]
