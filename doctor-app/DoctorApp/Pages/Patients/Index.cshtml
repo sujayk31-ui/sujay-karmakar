@@ -1,0 +1,32 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Patients";
+}
+
+<h1>Patients</h1>
+<p class="lede">A returning patient with the same name is kept on one history. Open a name to see visits, diagnoses, medicines, and tests.</p>
+@if (Model.Items.Count == 0)
+{
+    <p>No patients yet. <a asp-page="/Prescriptions/New">Write a prescription</a>.</p>
+}
+else
+{
+    <div class="list">
+        @foreach (var patient in Model.Items)
+        {
+            var last = patient.Prescriptions.OrderByDescending(p => p.CreatedAt).FirstOrDefault();
+            <a class="med" asp-page="/Patients/Details" asp-route-id="@patient.Id">
+                <div class="rowline">
+                    <strong>@patient.Name</strong>
+                    <span class="muted">@patient.Prescriptions.Count</span>
+                </div>
+                <p>Age @patient.Age · @(patient.WeightKg?.ToString("0.#") ?? "—") kg · BP @(patient.LatestBloodPressure ?? "—")</p>
+                @if (last != null)
+                {
+                    <p class="muted">Last visit @last.CreatedAt.ToLocalTime().ToString("dd MMM yyyy")</p>
+                }
+            </a>
+        }
+    </div>
+}

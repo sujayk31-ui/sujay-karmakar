@@ -1,0 +1,50 @@
+@page
+@model LoginModel
+@{
+    ViewData["Title"] = "Sign in";
+}
+
+<p class="mark">Vaidya</p>
+<h1>Sign in</h1>
+<p class="lede">Three ways: user ID and password, the 6-digit PIN, or this device’s fingerprint.</p>
+@if (!string.IsNullOrEmpty(Model.Message))
+{
+    <p class="error" role="alert">@Model.Message</p>
+}
+
+<form method="post" asp-page-handler="Password" class="card">
+    <h2>User ID and password</h2>
+    <input type="hidden" asp-for="ReturnUrl" />
+    <label asp-for="UserId">User ID</label>
+    <input asp-for="UserId" autocomplete="username" />
+    <label asp-for="Password"></label>
+    <input asp-for="Password" type="password" autocomplete="current-password" />
+    <div class="actions">
+        <button type="submit">Sign in</button>
+    </div>
+</form>
+
+<form method="post" asp-page-handler="Pin" class="card">
+    <h2>PIN</h2>
+    <input type="hidden" asp-for="ReturnUrl" />
+    <label asp-for="Pin">6-digit PIN</label>
+    <input asp-for="Pin" inputmode="numeric" pattern="\d{6}" maxlength="6" autocomplete="off" />
+    <div class="actions">
+        <button type="submit">Sign in with PIN</button>
+    </div>
+</form>
+
+<section class="card">
+    <h2>Fingerprint</h2>
+    <p>Fingerprint uses this device’s platform authenticator through WebAuthn. Vaidya asks the browser for a real check and does not invent a match. If this device has no platform authenticator, the message below says so.</p>
+    <p id="passkey-status" class="muted" role="status"></p>
+    <div class="actions">
+        <button type="button" id="passkey-login">Sign in with fingerprint</button>
+    </div>
+</section>
+
+<p>New to the clinic? <a asp-page="/Account/Register">Register</a></p>
+
+@section Scripts {
+    <script src="~/js/webauthn.js" asp-append-version="true"></script>
+}

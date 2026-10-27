@@ -1,0 +1,114 @@
+@page
+@model NewModel
+@{
+    ViewData["Title"] = "New prescription";
+}
+
+<h1>New prescription</h1>
+<p class="lede">The script keeps a copy of your name, degree, and phone, plus the patient details from this visit.</p>
+
+<section class="card">
+    <h2>Doctor on this script</h2>
+    <p><strong>Dr. @Model.Doctor.FullName</strong></p>
+    <p>@Model.Doctor.Degree</p>
+    <p>@PhoneNumbers.Display(Model.Doctor.PhoneNumber)</p>
+    <p class="muted"><a asp-page="/Account/Security">Edit the printed header</a></p>
+</section>
+
+<form method="post">
+    <div asp-validation-summary="ModelOnly" class="error"></div>
+    <section class="card">
+        <h2>Patient</h2>
+        <label asp-for="PatientName">Name</label>
+        <input asp-for="PatientName" autocomplete="off" />
+        <span asp-validation-for="PatientName"></span>
+        <div class="split">
+            <div>
+                <label asp-for="PatientAge">Age</label>
+                <input asp-for="PatientAge" placeholder="8 months" />
+                <span asp-validation-for="PatientAge"></span>
+            </div>
+            <div>
+                <label asp-for="WeightKg">Weight (kg)</label>
+                <input asp-for="WeightKg" inputmode="decimal" placeholder="12.5" />
+                <span asp-validation-for="WeightKg"></span>
+            </div>
+        </div>
+        <label asp-for="BloodPressure">Blood pressure</label>
+        <input asp-for="BloodPressure" placeholder="120/80 or sitting, left arm" />
+        <span asp-validation-for="BloodPressure"></span>
+        <label asp-for="PatientPhone">Patient phone, for WhatsApp</label>
+        <input asp-for="PatientPhone" inputmode="tel" placeholder="10-digit mobile, optional" />
+        <label asp-for="Diagnosis">Diagnosis</label>
+        <input asp-for="Diagnosis" />
+        <label asp-for="Notes">Notes</label>
+        <textarea asp-for="Notes"></textarea>
+    </section>
+
+    <section class="card">
+        <h2>Medicines</h2>
+        <p class="muted">Type two letters to pick a loaded medicine, or type a name that is not in the catalog.</p>
+        <div id="medicine-list">
+            @for (var i = 0; i < Model.Lines.Count; i++)
+            {
+                <div class="med-row" data-med>
+                    <label>Medicine</label>
+                    <input name="Lines[@i].MedicineName" value="@Model.Lines[i].MedicineName" autocomplete="off" data-name />
+                    <input type="hidden" name="Lines[@i].MedicineId" value="@Model.Lines[i].MedicineId" data-id />
+                    <div class="suggest" hidden></div>
+                    <label>Composition</label>
+                    <input name="Lines[@i].Composition" value="@Model.Lines[i].Composition" data-composition />
+                    <label>Company</label>
+                    <input name="Lines[@i].CompanyName" value="@Model.Lines[i].CompanyName" data-company />
+                    <div class="split">
+                        <div>
+                            <label>Dose</label>
+                            <input name="Lines[@i].Dosage" value="@Model.Lines[i].Dosage" placeholder="1 tablet twice a day" />
+                        </div>
+                        <div>
+                            <label>Duration</label>
+                            <input name="Lines[@i].Duration" value="@Model.Lines[i].Duration" placeholder="5 days" />
+                        </div>
+                    </div>
+                    <label>Instructions</label>
+                    <input name="Lines[@i].Instructions" value="@Model.Lines[i].Instructions" placeholder="After food" />
+                    <div class="actions">
+                        <button type="button" class="secondary remove-med">Remove</button>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="actions">
+            <button type="button" class="secondary" id="add-medicine">Add another medicine</button>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>Tests</h2>
+        <label for="test-filter">Filter the catalog</label>
+        <input id="test-filter" placeholder="CBC, dengue, LFT" />
+        @foreach (var group in Model.TestGroups)
+        {
+            <fieldset data-group>
+                <legend>@group.Category</legend>
+                @foreach (var test in group.Tests)
+                {
+                    <label class="check" data-test="@test.Name.ToLowerInvariant()">
+                        <input type="checkbox" name="TestIds" value="@test.Id" @(Model.TestIds.Contains(test.Id) ? "checked" : null) />
+                        <span>@test.Name</span>
+                    </label>
+                }
+            </fieldset>
+        }
+        <label for="CustomTests">Tests not in the catalog</label>
+        <textarea id="CustomTests" name="CustomTests" placeholder="One test per line">@Model.CustomTests</textarea>
+    </section>
+
+    <div class="actions">
+        <button type="submit">Save prescription</button>
+    </div>
+</form>
+
+@section Scripts {
+    <script src="~/js/prescription.js" asp-append-version="true"></script>
+}

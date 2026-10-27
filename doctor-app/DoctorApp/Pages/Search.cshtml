@@ -1,0 +1,125 @@
+@page
+@model SearchModel
+@using System.Globalization
+@{
+    ViewData["Title"] = Model.Result.Title;
+}
+
+<h1>@Model.Result.Title</h1>
+@if (!string.IsNullOrWhiteSpace(Model.Result.Note))
+{
+    <p class="lede">@Model.Result.Note</p>
+}
+
+<form method="get" class="card">
+    @if (!string.IsNullOrWhiteSpace(Model.Company))
+    {
+        <input type="hidden" name="company" value="@Model.Company" />
+    }
+    @if (!string.IsNullOrWhiteSpace(Model.Sub))
+    {
+        <input type="hidden" name="sub" value="@Model.Sub" />
+    }
+    @if (!string.IsNullOrWhiteSpace(Model.Category))
+    {
+        <input type="hidden" name="category" value="@Model.Category" />
+    }
+    <label for="q">Medicine, disease, or company</label>
+    <input id="q" name="q" value="@Model.Q" placeholder="dengue, Cipla, paracetamol" />
+    <label class="check">
+        <input type="checkbox" name="antibiotic" value="true" @(Model.Antibiotic ? "checked" : null) />
+        <span>Antibiotics only</span>
+    </label>
+    <div class="actions">
+        <button type="submit">Search</button>
+        <a class="button secondary" asp-page="/Search">Clear</a>
+        <a class="button secondary" asp-page="/Diseases">Diseases</a>
+    </div>
+</form>
+
+@if (Model.Result.Mode == "empty")
+{
+    <div class="shortcuts">
+        <a class="shortcut fever" asp-page="/Search" asp-route-q="fever"><strong>Fever</strong><span>Open the fever list</span></a>
+        <a class="shortcut malaria" asp-page="/Search" asp-route-q="malaria"><strong>Malaria</strong><span>Open the malaria list</span></a>
+        <a class="shortcut dengue" asp-page="/Search" asp-route-q="dengue"><strong>Dengue</strong><span>Open the dengue list</span></a>
+    </div>
+}
+else if (Model.Result.Mode == "company")
+{
+    <p class="muted">@Model.Result.Total loaded packs.</p>
+    @foreach (var group in Model.Result.Companies)
+    {
+        <h2 class="section-head">@group.Name</h2>
+        <p class="muted">@group.KindLabel</p>
+        <div class="list">
+            @foreach (var product in group.Products)
+            {
+                <article class="med">
+                    <div class="rowline">
+                        <strong>@product.Name</strong>
+                        @if (product.MrpInr is decimal price)
+                        {
+                            <span class="price">₹@price.ToString("0.00", CultureInfo.InvariantCulture)</span>
+                        }
+                        else
+                        {
+                            <span class="muted">No MRP in source</span>
+                        }
+                    </div>
+                    <p>@product.Composition</p>
+                    @if (!string.IsNullOrWhiteSpace(product.Pack))
+                    {
+                        <p class="muted">@product.Pack</p>
+                    }
+                </article>
+            }
+        </div>
+    }
+}
+else if (Model.Result.Products.Count == 0)
+{
+    <p>Nothing matched.</p>
+}
+else
+{
+    <p class="muted">
+        @if (Model.Result.Products.Count < Model.Result.Total)
+        {
+            <text>Showing @Model.Result.Products.Count of @Model.Result.Total. Company search lists every loaded pack.</text>
+        }
+        else
+        {
+            <text>@Model.Result.Total loaded.</text>
+        }
+    </p>
+    <div class="list">
+        @foreach (var product in Model.Result.Products)
+        {
+            <article class="med">
+                <div class="rowline">
+                    <strong>@product.Name</strong>
+                    @if (product.MrpInr is decimal price)
+                    {
+                        <span class="price">₹@price.ToString("0.00", CultureInfo.InvariantCulture)</span>
+                    }
+                    else
+                    {
+                        <span class="muted">No MRP in source</span>
+                    }
+                </div>
+                <p>@product.Composition</p>
+                @if (!string.IsNullOrWhiteSpace(product.CompanyName))
+                {
+                    <p class="muted">@product.CompanyName</p>
+                }
+                <p>
+                    @foreach (var tag in product.Tags.Take(8))
+                    {
+                        <span class="tag @tag.Origin">@tag.Label · @tag.Origin</span>
+                    }
+                </p>
+            </article>
+        }
+    </div>
+}

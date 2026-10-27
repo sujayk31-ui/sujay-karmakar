@@ -1,0 +1,32 @@
+@page
+@model CompaniesModel
+@{
+    ViewData["Title"] = "Companies";
+}
+
+<h1>Companies</h1>
+<p class="lede">Each name opens every loaded pack from that public table. Composition is shown. MRP is shown only when that source printed one.</p>
+
+<form class="card" method="get" asp-page="/Search">
+    <label for="q">Find a company or brand</label>
+    <input id="q" name="q" placeholder="Sun, Mankind, Cipla, Pantocid" />
+    <div class="actions">
+        <button type="submit">Search</button>
+    </div>
+</form>
+
+<label for="company-filter">Filter this list</label>
+<input id="company-filter" placeholder="Type a company" />
+
+<div class="list" style="margin-top: 0.8rem">
+    @foreach (var company in Model.Companies)
+    {
+        <a class="med" data-company="@company.Name.ToLowerInvariant()" asp-page="/Search" asp-route-company="@company.Name">
+            <div class="rowline">
+                <strong>@company.Name</strong>
+                <span>@company.Total</span>
+            </div>
+            <p class="muted">@company.KindLabel</p>
+        </a>
+    }
+</div>

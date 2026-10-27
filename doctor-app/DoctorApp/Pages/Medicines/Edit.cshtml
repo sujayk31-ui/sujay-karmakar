@@ -1,0 +1,24 @@
+@page "{id:int}"
+@model EditModel
+@{
+    ViewData["Title"] = "Edit medicine";
+}
+
+<h1>Edit medicine</h1>
+<form method="post" class="card">
+    <input type="hidden" asp-for="Id" />
+    <label asp-for="Name">Name</label>
+    <input asp-for="Name" />
+    <span asp-validation-for="Name"></span>
+    <label asp-for="Composition">Composition</label>
+    <input asp-for="Composition" />
+    <span asp-validation-for="Composition"></span>
+    <label asp-for="CompanyName">Company</label>
+    <input asp-for="CompanyName" />
+    <label asp-for="DoseForm">Form</label>
+    <input asp-for="DoseForm" />
+    <div class="actions">
+        <button type="submit">Save</button>
+        <button type="submit" class="danger" asp-page-handler="Delete" formnovalidate>Delete</button>
+    </div>
+</form>

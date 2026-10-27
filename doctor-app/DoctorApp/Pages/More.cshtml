@@ -1,0 +1,16 @@
+@page
+@{
+    ViewData["Title"] = "More";
+}
+
+<h1>More</h1>
+<div class="list">
+    <a class="med" asp-page="/Diseases"><strong>Diseases</strong><p class="muted">Categories and subcategories</p></a>
+    <a class="med" asp-page="/Companies"><strong>Companies</strong><p class="muted">Brand tables with composition</p></a>
+    <a class="med" asp-page="/Prescriptions/Index"><strong>Prescriptions</strong><p class="muted">Scripts already written</p></a>
+    <a class="med" asp-page="/Medicines/Index"><strong>My medicines</strong><p class="muted">Medicines you added</p></a>
+    <a class="med" asp-page="/Account/Security"><strong>Fingerprint and profile</strong><p class="muted">Passkey, name, degree, phone</p></a>
+</div>
+<form method="post" asp-page="/Account/Logout" class="actions">
+    <button type="submit">Sign out</button>
+</form>
