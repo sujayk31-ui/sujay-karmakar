@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DoctorApp", "DoctorApp\DoctorApp.csproj", "{294EA6F4-3BE7-4C6E-B235-73AD853A946F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DoctorApp.Tests", "DoctorApp.Tests\DoctorApp.Tests.csproj", "{42E314C1-8954-4184-A9BC-E0B161471B3E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{294EA6F4-3BE7-4C6E-B235-73AD853A946F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{294EA6F4-3BE7-4C6E-B235-73AD853A946F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{294EA6F4-3BE7-4C6E-B235-73AD853A946F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{294EA6F4-3BE7-4C6E-B235-73AD853A946F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42E314C1-8954-4184-A9BC-E0B161471B3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42E314C1-8954-4184-A9BC-E0B161471B3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42E314C1-8954-4184-A9BC-E0B161471B3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42E314C1-8954-4184-A9BC-E0B161471B3E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
